@@ -1,6 +1,10 @@
 > ! This is private repo for **The Walking Dead** team.
 
 ```bash
+# Add UBTECH-Walker as upstream
+git remote add upstream https://github.com/UBTECH-Walker/WalkerSimulationFor2020WAIC.git
+
+
 # Push to the Team private repo
 git push origin master
 
@@ -8,6 +12,7 @@ git push origin master
 git pull origin master
 # or
 git fetch origin master
+
 
 
 # Pull/Fetch from UBTECH-Walker (Only for sync purpose)
