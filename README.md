@@ -1,5 +1,15 @@
 > ! This is private repo for **The Walking Dead** team.
 
+[Sync](#sync)
+[The Walking Dead Package](#the-walking-dead-package)
+[Task Status](#task-status)
+[Rules](#rules)
+
+
+---
+
+
+## Sync
 ```bash
 # Add UBTECH-Walker as upstream
 git remote add upstream https://github.com/UBTECH-Walker/WalkerSimulationFor2020WAIC.git
@@ -21,6 +31,18 @@ git pull upstream master
 git fetch upstream master
 
 ```
+
+
+---
+
+## The Walking Dead Package
+```bash
+roscd {.PATH.}/ubt_sim_ws/src/thewalkingdead/
+rosrun thewalkingdead {.py file in your script folder}
+```
+
+---
+
 
 ## Task Status
 
@@ -109,8 +131,12 @@ git fetch upstream master
     rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
     ```
 
+
+
+
 ---
 
+## Rules
 
 赛事概述 
 
