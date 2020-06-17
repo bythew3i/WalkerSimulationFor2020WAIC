@@ -4,3 +4,4 @@
 # prevent /build in /walker_model/controllers/task1/build
 
 *.wbproj
+*.pyc
