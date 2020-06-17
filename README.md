@@ -1,9 +1,9 @@
 > ! This is private repo for **The Walking Dead** team.
 
-[Sync](#sync)
-[The Walking Dead Package](#the-walking-dead-package)
-[Task Status](#task-status)
-[Rules](#rules)
+- [Sync](#sync)
+- [The Walking Dead Package](#the-walking-dead-package)
+- [Task Status](#task-status)
+- [Rules](#rules)
 
 
 ---
