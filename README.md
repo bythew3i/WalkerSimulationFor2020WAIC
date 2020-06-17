@@ -22,6 +22,17 @@ git fetch upstream master
 
 ```
 
+## Task Status
+
+### 运动控制模式
+- [ ] （10分）任务1：开电灯 
+    `rosservice call /walker/sence "{scene_name: SwitchLight, nav: false, vision: false}"`
+- [ ] （20分）任务2：拿饮料罐 `rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"`
+- [ ] （30分）任务6：推平板车
+- [ ] （40分）任务10：开冰箱
+
+---
+
 
 赛事概述 
 
