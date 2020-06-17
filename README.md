@@ -24,12 +24,90 @@ git fetch upstream master
 
 ## Task Status
 
-### 运动控制模式
+### (总计100分) 运动控制模式 Control Mode
 - [ ] （10分）任务1：开电灯 
-    `rosservice call /walker/sence "{scene_name: SwitchLight, nav: false, vision: false}"`
-- [ ] （20分）任务2：拿饮料罐 `rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"`
+    ```
+    rosservice call /walker/sence "{scene_name: SwitchLight, nav: false, vision: false}"
+    ```
+- [ ] （20分）任务2：拿饮料罐 
+    ```
+    rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"
+    ```
 - [ ] （30分）任务6：推平板车
+    ```
+    rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: false}"
+    ```
 - [ ] （40分）任务10：开冰箱
+    ```
+    rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: false}"
+    ```
+
+### （总计60分） 运动控制+视觉模式 Vision Mode
+> 完成一项40分；两项50分；三项60分
+- [ ] 任务3：拿饮料罐
+    ```
+    rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: true}"
+    ```
+- [ ] 任务7：推平板车
+    ```
+    rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: true}"
+    ```
+- [ ] 任务11：开冰箱 
+    ```
+    rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: true}"
+    ```
+
+
+### （总计75分）运动控制+视觉+导航模式 Navigation Mode
+> 计分表述不明 
+- [ ] 任务4：拿饮料罐
+    ```
+    rosservice call /walker/sence "{scene_name: GraspCup, nav: true, vision: false}"
+    ```
+- [ ] 任务5：拿饮料罐
+    ```
+    rosservice call /walker/sence "{scene_name: GraspCup, nav: true, vision: false}"
+    ```
+- [ ] 任务8：推平板车
+    ```
+    rosservice call /walker/sence "{scene_name: PushCart, nav: true, vision: false}"
+    ```
+- [ ] 任务9：推平板车
+    ```
+    rosservice call /walker/sence "{scene_name: PushCart, nav: true, vision: false}"
+    ```
+- [ ] 任务12：开冰箱
+    ```
+    rosservice call /walker/sence "{scene_name: OpenFridge, nav: true, vision: false}"
+    ```
+- [ ] 任务13：开冰箱
+    ```
+    rosservice call /walker/sence "{scene_name: OpenFridge, nav: true, vision: false}"
+    ```
+
+
+### （总计120分）挑战任务
+> 搬箱子：
+> 1. （20分）将箱子提起离开桌面
+> 2. （40分） 直线行走至红色引导线
+> 
+> 上楼梯：
+> -  0 ~ 10s：60分
+> - 10 ~ 20s：50分
+> - 20 ~ 30s：40分
+> - 30 ~ 40s：30分
+> - 40 ~ 50s：20分
+> - >= 60s：10分
+> 
+
+- [ ] （60分）任务14：搬箱子
+    ```
+    rosservice call /walker/sence "{scene_name: CarryBox, nav: false, vision: false}"
+    ```
+- [ ] （60分）任务15：上楼梯
+    ```
+    rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
+    ```
 
 ---
 
