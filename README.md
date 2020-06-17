@@ -1,12 +1,10 @@
 > ! This is private repo for **The Walking Dead** team.
 
+- [The Walking Dead Docs](./docs.md)
 - [Sync](#sync)
-- [The Walking Dead Package](#the-walking-dead-package)
 - [Task Status](#task-status)
 - [Rules](#rules)
 
-
----
 
 
 ## Sync
@@ -32,16 +30,6 @@ git fetch upstream master
 
 ```
 
-
----
-
-## The Walking Dead Package
-```bash
-roscd {.PATH.}/ubt_sim_ws/src/thewalkingdead/
-rosrun thewalkingdead {.py file in your script folder}
-```
-
----
 
 
 ## Task Status
@@ -134,7 +122,6 @@ rosrun thewalkingdead {.py file in your script folder}
 
 
 
----
 
 ## Rules
 
