@@ -1,0 +1,6 @@
+*/ubt_sim_ws/build/
+*/ubt_sim_ws/devel/
+
+# prevent /build in /walker_model/controllers/task1/build
+
+*.wbproj
