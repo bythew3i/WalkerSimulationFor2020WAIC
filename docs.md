@@ -1,8 +1,9 @@
 
-# TheWalkingDead DOCs
+# TheWalkingDead Docs
 
 - [Resources](#resources)
-- [Walk Demo](#walk-demo)
+- [Setup](#setup)
+- [Run Walk Demo](#run-walk-demo)
 
 ## Resources
 
@@ -11,8 +12,38 @@
 - [rospy services](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29)
 
 
-## Walk Demo
+## Setup
+**If `roscore` is NOT runing**, run this in another terminal:
 ```bash
-roscd {.PATH.}/ubt_sim_ws/src/thewalkingdead/
+roscore
+```
+
+Before using `thewalkingdead` package, you need to compile source once:
+```bash
+cd { PATH }/ubt_sim_ws
+
+# make under /ubt_sim_ws
+catkin_make
+source devel/setup.bash
+```
+
+Then you can change directory to `thewalkingdead` package:
+```bash
+roscd thewalkingdead
+```
+
+
+
+## Run Walk Demo
+Auth to use leg_motion
+```bash
+roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
+```
+
+Run python script
+```bash
+roscd thewalkingdead
 rosrun thewalkingdead walk_demo.py
 ```
+
+
