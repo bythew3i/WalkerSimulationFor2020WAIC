@@ -1,0 +1,6 @@
+string LeftRight
+float64[7] limbTwist
+float64[3] targetPos
+float64[4] targetOri
+---
+float64[7] limbTwist

@@ -1,7 +1,13 @@
 #include "walker_arm_kin.h"
+#include "thewalkingdead/Solver.h"
+
+#include <random>
 
 string arm_joint_names[17]={"left_limb_l1","left_limb_l2","left_limb_l3","left_limb_l4","left_limb_l5","left_limb_l6","left_limb_l7","left_palm_link",
                             "right_limb_l1","right_limb_l2","right_limb_l3","right_limb_l4","right_limb_l5","right_limb_l6","right_limb_l7","right_palm_link","base_link"};
+
+random_device rd;
+mt19937 gen(rd());
 
 void forward_kinematics_left(VectorXd joint_values, Tree walker_tree, VectorXd &result)
 {
@@ -131,7 +137,6 @@ bool get_inverse_right(std::string urdf_path, VectorXd target_position_right, Ve
            ik_q_right_temp(6) < 0.3808 && ik_q_right_temp(6) > -0.3808 )
         {
             ik_q_right = ik_q_right_temp;
-
             VectorXd pose_expect_right(7), pose_result_right(7), pose_diff_right(7);
             pose_expect_right << target_position_right, target_orientation_right;
             forward_kinematics_right(ik_q_right, walker_tree, pose_result_right);
@@ -153,6 +158,26 @@ bool get_inverse_right(std::string urdf_path, VectorXd target_position_right, Ve
     return ik_flag;
 }
 
+VectorXd leftLimbQInitSampler()
+{
+    VectorXd q(7);
+    MatrixXd bounds(7, 2);
+
+    bounds <<   -0.7854, 3.1416,
+                -1.5708, 0.0175,
+                -1.9199, 1.9199,
+                -2.2340, 0.0000,
+                -2.2362, 2.3562,
+                -0.3808, 0.3808,
+                -0.3808, 0.3808;
+    for (int i = 0; i < 7; i++)
+    {
+        uniform_real_distribution<> dis(bounds.row(i)[0], bounds.row(i)[1]);
+        q(i) = dis(gen);
+    }
+
+    return q;
+}
 
 bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, VectorXd target_orientation_left, VectorXd &ik_q_left)
 {
@@ -161,7 +186,7 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
     KDL::Chain arm_chain_left;
     walker_tree.getChain("base_link", "left_palm_link", arm_chain_left);
 
-    MatrixXd inverse_seed_dataset_left(13,7);
+    MatrixXd inverse_seed_dataset_left(14,7);
     inverse_seed_dataset_left <<    0.509665,   0.0292415,-1.0758,  -0.961518, 1.06343,  0.068358,  -0.0761238,
                                     0.293661,  -0.231343, -1.48403, -0.946466, 0.970626, 0.187625,  -0.00901214,
                                     0.0897379, -0.280718, -1.48384, -1.1664,   0.906966, 0.177558,  -0.00901214,
@@ -174,14 +199,24 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
                                     -0.00421845,0.0278034,-1.2803,  -1.46399,  1.25087,  0.0455401, -0.00901214,
                                     0.509665,   0.0292415,-1.0758,  -0.961518, 1.06343,  0.068358,  -0.0761238,
                                     0.274678,   0.028858, -1.12297, -1.19881,  1.14147, 0.0780413, -0.0765073,
-                                    0.088108,   0.0230097,-1.12374, -1.41654,  1.25115,  0.0756444, -0.0765073;
+                                    0.088108,   0.0230097,-1.12374, -1.41654,  1.25115,  0.0756444, -0.0765073,
+                                    0.574, -0.79, 0, -0.92, 0, 0, 0;
 
     VectorXd ik_q_left_temp(7);
     bool ik_flag = false;
 
-    for(int i=0; i<inverse_seed_dataset_left.rows(); i++)
+    for(int i=0; i<14; i++)
     {
+        // ik_q_left_temp:   
+        // 1.19925
+        // 0.286171
+        // -1.25828
+        // -0.887628
+        // 1.0927
+        // -0.41945
+        // 0.737085
         ik_q_left_temp = inverse_kinematics(target_position_left, target_orientation_left, inverse_seed_dataset_left.row(i), arm_chain_left);
+        cout << "ik_q_left_temp: " << ik_q_left_temp << endl;
         if(ik_q_left_temp(0) < 3.1416 && ik_q_left_temp(0) > -0.7854 &&
            ik_q_left_temp(1) < 0.0175 && ik_q_left_temp(1) > -1.5708 &&
            ik_q_left_temp(2) < 1.9199 && ik_q_left_temp(2) > -1.9199 &&
@@ -196,6 +231,7 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
             pose_expect_left << target_position_left, target_orientation_left;
             forward_kinematics_left(ik_q_left, walker_tree, pose_result_left);
             pose_diff_left = pose_result_left - pose_expect_left;
+            cout << "pose_diff_left: " << pos_diff_left << end;
             if(pose_diff_left.norm() < 0.001)
             {
                 ik_flag = true;
@@ -211,4 +247,74 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
         cout << "左臂反解失败..." << endl ;
     }
     return ik_flag;
+}
+
+bool solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
+{
+    string urdf_path = "/home/wyh/WalkerSimulationFor2020WAIC/walker_WAIC_18.04_v1.2_20200616/ubt_sim_ws/src/thewalkingdead/config/walker.urdf";
+    string left_or_right = req.LeftRight;
+    VectorXd target_position(3);
+    VectorXd target_orientation(4);
+    VectorXd ik_q(7);
+    bool result = false;
+
+    ROS_INFO("target pos: ");
+    for (int i = 0; i < 3; i++)
+    {
+        printf("[%d]:%f ", i, req.targetPos[i]);
+        target_position[i] = req.targetPos[i];
+    }
+    printf("\n");
+
+    ROS_INFO("target orientation: ");
+    for (int i = 0; i < 4; i++)
+    {
+        printf("[%d]:%f ", i, req.targetOri[i]);
+        target_orientation[i] = req.targetOri[i];
+    }
+    printf("\n");
+
+    ROS_INFO("limbTwists: ");
+    for (int i = 0; i < 7; i++)
+    {
+        printf("[%d]:%f ", i, req.limbTwist[i]);
+        ik_q[i] = req.limbTwist[i];
+    }
+    printf("\n");
+
+    if (left_or_right == "left")
+    {
+        result = get_inverse_left(urdf_path, target_position, target_orientation, ik_q);
+    }
+    else if (left_or_right == "right")
+    {
+        result = get_inverse_right(urdf_path, target_position, target_orientation, ik_q);
+    }
+    else
+    {
+        ROS_WARN("Should be 'left' or 'right'.");
+        return false;
+    }
+
+    ROS_INFO("Solved limbTwists: ");
+    for (int i = 0; i < 7; i++)
+    {
+        printf("[%d]:%f ", i, ik_q[i]);
+        res.limbTwist[i] = ik_q[i];
+    }
+    printf("\n");
+
+    return result;
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "kinematic_solver_server");
+    ros::NodeHandle n;
+
+    ros::ServiceServer service = n.advertiseService("kinematic_solver", solver_callback);
+    ROS_INFO("Ready to Solve.");
+    ros::spin();
+
+    return 0;
 }
