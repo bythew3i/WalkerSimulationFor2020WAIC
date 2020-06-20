@@ -37,7 +37,7 @@ catkin_make
 
 # Run service
 source ${ubt_sim_ws_HOME}/devel/setup.bash
-rosrun thewalkingdead solver_server_node
+roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.urdf}
 # [ INFO] [1592677570.580549330]: Ready to Solve.
 
 # IK Service name is "inverse_kinematic_solver"
