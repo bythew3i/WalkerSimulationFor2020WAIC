@@ -238,7 +238,12 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
                                     0.509665,   0.0292415,-1.0758,  -0.961518, 1.06343,  0.068358,  -0.0761238,
                                     0.274678,   0.028858, -1.12297, -1.19881,  1.14147, 0.0780413, -0.0765073,
                                     0.088108,   0.0230097,-1.12374, -1.41654,  1.25115,  0.0756444, -0.0765073,
-                                    ik_q_left;
+                                    0, 0, 0, 0, 0, 0, 0;
+
+    for (int i = 0; i < 7; i++)
+    {
+        inverse_seed_dataset_left.row(13)[i] = ik_q_left[i];
+    }
 
     VectorXd ik_q_left_temp(7), ik_q_left_cur(7);
     ik_q_left_cur = ik_q_left;
