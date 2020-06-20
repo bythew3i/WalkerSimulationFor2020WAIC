@@ -30,7 +30,20 @@ git fetch upstream master
 
 ```
 
+## Use of Inverse Kinematics
+```bash
+# Build service, in ${ubt_sim_ws}
+catkin_make
 
+# Run service
+source ${ubt_sim_ws_HOME}/devel/setup.bash
+rosrun thewalkingdead solver_server_node
+# [ INFO] [1592677570.580549330]: Ready to Solve.
+
+# Service name is "kinematic_solver"
+# Message type is "Solver", read more in thewalkingdead/srv/Solver.srv
+# For usage, see ik_demo.py
+```
 
 ## Task Status
 
@@ -119,7 +132,8 @@ git fetch upstream master
     rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
     ```
 
-
+## ChangeLog
+- 2020-06-20 新增反向运动学Service，仅支持左手
 
 
 

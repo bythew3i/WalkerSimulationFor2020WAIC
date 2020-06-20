@@ -9,6 +9,8 @@ string arm_joint_names[17]={"left_limb_l1","left_limb_l2","left_limb_l3","left_l
 random_device rd;
 mt19937 gen(rd());
 
+MatrixXd leftLimbBound(7, 2);
+
 void forward_kinematics_left(VectorXd joint_values, Tree walker_tree, VectorXd &result)
 {
     Chain chain;
@@ -163,13 +165,7 @@ VectorXd leftLimbQInitSampler()
     VectorXd q(7);
     MatrixXd bounds(7, 2);
 
-    bounds <<   -0.7854, 3.1416,
-                -1.5708, 0.0175,
-                -1.9199, 1.9199,
-                -2.2340, 0.0000,
-                -2.2362, 2.3562,
-                -0.3808, 0.3808,
-                -0.3808, 0.3808;
+
     for (int i = 0; i < 7; i++)
     {
         uniform_real_distribution<> dis(bounds.row(i)[0], bounds.row(i)[1]);
@@ -177,6 +173,48 @@ VectorXd leftLimbQInitSampler()
     }
 
     return q;
+}
+
+float compute_error(VectorXd solve, MatrixXd bounds, int count)
+{
+    float error = 0;
+    for (int i = 0; i < count; i++)
+    {
+        float lb = bounds.row(i)[0], ub = bounds.row(i)[1];
+        float val = solve(i);
+        error += val < lb ? lb - val : 0;
+        error += val > ub ? val - ub : 0;
+    }
+    return error;
+}
+
+bool check_bound(VectorXd solve, MatrixXd bounds, int count)
+{
+    vector<int> ob_link;
+    for (int i = 0; i < count; i++)
+    {
+        float lb = bounds.row(i)[0], ub = bounds.row(i)[1];
+        float val = solve(i);
+        if (val < lb && val > ub)
+        {
+            ob_link.push_back(i);
+        }
+    }
+    if (ob_link.empty())
+    {
+        ROS_INFO("Solution is in range.");
+        return true;
+    }
+    else
+    {
+        ROS_INFO("Solution is partially out of bound. OB_LINKS: ");
+        for (int n : ob_link)
+        {
+            cout << n << " ";
+        }
+        cout << endl;
+        return false;
+    }
 }
 
 bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, VectorXd target_orientation_left, VectorXd &ik_q_left)
@@ -200,45 +238,28 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
                                     0.509665,   0.0292415,-1.0758,  -0.961518, 1.06343,  0.068358,  -0.0761238,
                                     0.274678,   0.028858, -1.12297, -1.19881,  1.14147, 0.0780413, -0.0765073,
                                     0.088108,   0.0230097,-1.12374, -1.41654,  1.25115,  0.0756444, -0.0765073,
-                                    0.574, -0.79, 0, -0.92, 0, 0, 0;
+                                    ik_q_left;
 
-    VectorXd ik_q_left_temp(7);
+    VectorXd ik_q_left_temp(7), ik_q_left_cur(7);
+    ik_q_left_cur = ik_q_left;
+
     bool ik_flag = false;
+    
+    float min_error = 1e9;
 
     for(int i=0; i<14; i++)
     {
-        // ik_q_left_temp:   
-        // 1.19925
-        // 0.286171
-        // -1.25828
-        // -0.887628
-        // 1.0927
-        // -0.41945
-        // 0.737085
         ik_q_left_temp = inverse_kinematics(target_position_left, target_orientation_left, inverse_seed_dataset_left.row(i), arm_chain_left);
-        cout << "ik_q_left_temp: " << ik_q_left_temp << endl;
-        if(ik_q_left_temp(0) < 3.1416 && ik_q_left_temp(0) > -0.7854 &&
-           ik_q_left_temp(1) < 0.0175 && ik_q_left_temp(1) > -1.5708 &&
-           ik_q_left_temp(2) < 1.9199 && ik_q_left_temp(2) > -1.9199 &&
-           ik_q_left_temp(3) < 0.0000 && ik_q_left_temp(3) > -2.2340 &&
-           ik_q_left_temp(4) < 2.3562 && ik_q_left_temp(4) > -2.3562 &&
-           ik_q_left_temp(5) < 0.3808 && ik_q_left_temp(5) > -0.3808 &&
-           ik_q_left_temp(6) < 0.3808 && ik_q_left_temp(6) > -0.3808 )
+        
+        cout << "solution: " << ik_q_left_temp << endl;
+        float error1 = (ik_q_left_temp - ik_q_left_cur).norm();
+        float error2 = compute_error(ik_q_left_temp, leftLimbBound, 7);
+        float error = error1 + error2 * error2;
+        if (error < min_error && error < 7+7*7)
         {
+            ik_flag = true;
+            min_error = error;
             ik_q_left = ik_q_left_temp;
-
-            VectorXd pose_expect_left(7), pose_result_left(7), pose_diff_left(7);
-            pose_expect_left << target_position_left, target_orientation_left;
-            forward_kinematics_left(ik_q_left, walker_tree, pose_result_left);
-            pose_diff_left = pose_result_left - pose_expect_left;
-            cout << "pose_diff_left: " << pos_diff_left << end;
-            if(pose_diff_left.norm() < 0.001)
-            {
-                ik_flag = true;
-                cout << "经过" << i+1 << "次种子选取，左臂反解成功：" << endl << ik_q_left << endl;
-                cout << "左臂末端计算位姿：" << endl << pose_result_left << endl;
-                break;
-            }
         }
     }
 
@@ -246,6 +267,8 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
     {
         cout << "左臂反解失败..." << endl ;
     }
+
+    check_bound(ik_q_left, leftLimbBound, 7);
     return ik_flag;
 }
 
@@ -309,6 +332,14 @@ bool solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solve
 
 int main(int argc, char **argv)
 {
+    leftLimbBound << -0.7854, 3.1416,
+                    -1.5708, 0.0175,
+                    -1.9199, 1.9199,
+                    -2.2340, 0.0000,
+                    -2.2362, 2.3562,
+                    -0.3808, 0.3808,
+                    -0.3808, 0.3808;
+
     ros::init(argc, argv, "kinematic_solver_server");
     ros::NodeHandle n;
 
