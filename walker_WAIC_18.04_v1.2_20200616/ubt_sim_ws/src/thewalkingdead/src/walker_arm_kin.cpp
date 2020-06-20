@@ -11,6 +11,8 @@ mt19937 gen(rd());
 
 MatrixXd leftLimbBound(7, 2);
 
+string walker_urdf_path;
+
 void forward_kinematics_left(VectorXd joint_values, Tree walker_tree, VectorXd &result)
 {
     Chain chain;
@@ -295,7 +297,6 @@ bool get_forward_right(string urdf_path, VectorXd joints_val, VectorXd &result)
 
 bool inverse_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
 {
-    string urdf_path = "/home/wyh/WalkerSimulationFor2020WAIC/walker_WAIC_18.04_v1.2_20200616/ubt_sim_ws/src/thewalkingdead/config/walker.urdf";
     string left_or_right = req.LeftRight;
     VectorXd target_position(3);
     VectorXd target_orientation(4);
@@ -328,11 +329,11 @@ bool inverse_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdea
 
     if (left_or_right == "left")
     {
-        result = get_inverse_left(urdf_path, target_position, target_orientation, ik_q);
+        result = get_inverse_left(walker_urdf_path, target_position, target_orientation, ik_q);
     }
     else if (left_or_right == "right")
     {
-        result = get_inverse_right(urdf_path, target_position, target_orientation, ik_q);
+        result = get_inverse_right(walker_urdf_path, target_position, target_orientation, ik_q);
     }
     else
     {
@@ -353,7 +354,6 @@ bool inverse_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdea
 
 bool forward_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
 {
-    string urdf_path = "/home/wyh/WalkerSimulationFor2020WAIC/walker_WAIC_18.04_v1.2_20200616/ubt_sim_ws/src/thewalkingdead/config/walker.urdf";
     string left_or_right = req.LeftRight;
     VectorXd jointVal(7);
     VectorXd pose(7);
@@ -366,11 +366,11 @@ bool forward_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdea
 
     if (left_or_right == "left")
     {
-        result = get_forward_left(urdf_path, jointVal, pose);
+        result = get_forward_left(walker_urdf_path, jointVal, pose);
     }
     else if (left_or_right == "right")
     {
-        result = get_forward_right(urdf_path, jointVal, pose);
+        result = get_forward_right(walker_urdf_path, jointVal, pose);
     }
     else
     {
@@ -396,8 +396,12 @@ int main(int argc, char **argv)
                     -0.3808, 0.3808,
                     -0.3808, 0.3808;
 
+
     ros::init(argc, argv, "kinematic_solver_server");
     ros::NodeHandle n;
+
+    n.getParam("/solver_server_node/walker_urdf_path", walker_urdf_path);
+    cout << "urdf path: " << walker_urdf_path << endl;
 
     ros::ServiceServer inv_srv = n.advertiseService("inverse_kinematic_solver", inverse_solver_callback);
     ros::ServiceServer for_srv = n.advertiseService("forward_kinematic_solver", forward_solver_callback);
