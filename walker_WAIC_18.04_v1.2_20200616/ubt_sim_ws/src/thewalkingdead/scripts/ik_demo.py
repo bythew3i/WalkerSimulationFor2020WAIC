@@ -40,9 +40,9 @@ def test_solver():
     target_pos = [0.3, 0.1, 0.0]
     target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 0.785)
     
-    rospy.wait_for_service('kinematic_solver')
+    rospy.wait_for_service('inverse_kinematic_solver')
     try:
-        kine_solver = rospy.ServiceProxy('kinematic_solver', Solver)
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
         resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
                                 targetPos=target_pos, targetOri=target_ori)
     except rospy.ServiceException as e:
@@ -76,9 +76,9 @@ def test_solver2():
     target_pos = [0.3, 0.4, 0.0]
     target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 1.571)
     
-    rospy.wait_for_service('kinematic_solver')
+    rospy.wait_for_service('inverse_kinematic_solver')
     try:
-        kine_solver = rospy.ServiceProxy('kinematic_solver', Solver)
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
         resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
                                 targetPos=target_pos, targetOri=target_ori)
     except rospy.ServiceException as e:
@@ -112,9 +112,9 @@ def test_solver3():
     target_pos = [0.45, 0.4, 0.0]
     target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 1.571)
     
-    rospy.wait_for_service('kinematic_solver')
+    rospy.wait_for_service('inverse_kinematic_solver')
     try:
-        kine_solver = rospy.ServiceProxy('kinematic_solver', Solver)
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
         resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
                                 targetPos=target_pos, targetOri=target_ori)
     except rospy.ServiceException as e:
@@ -148,9 +148,9 @@ def test_solver4():
     target_pos = [0.45, 0.1, 0.0]
     target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 0.785)
     
-    rospy.wait_for_service('kinematic_solver')
+    rospy.wait_for_service('inverse_kinematic_solver')
     try:
-        kine_solver = rospy.ServiceProxy('kinematic_solver', Solver)
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
         resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
                                 targetPos=target_pos, targetOri=target_ori)
     except rospy.ServiceException as e:
@@ -205,7 +205,7 @@ def test_solver_circle():
     theta = -1.571
 
     limb_pub = rospy.Publisher('/walker/leftLimb/controller', JointCommand, queue_size=10)
-    kine_solver = rospy.ServiceProxy('kinematic_solver', Solver)
+    kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
 
     cur = 0
     frames = 40
@@ -222,7 +222,7 @@ def test_solver_circle():
 
         print("target_pos", target_pos)
 
-        rospy.wait_for_service('kinematic_solver')
+        rospy.wait_for_service('inverse_kinematic_solver')
         try:
             resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
                                     targetPos=target_pos, targetOri=target_ori)
@@ -235,8 +235,34 @@ def test_solver_circle():
 
         goto(limb_tar, 0.1, 100, limb_pub)
 
+def initial_pose_left():
+    # Send to solver
+    limb_cur = [0, 0, 0, 0, 0, 0, 0] # 初始关节参数
+    target_pos = [0, 0, 0] #dummy list
+    target_ori = [0, 0, 0, 1] #dummy list
+    
+    rospy.wait_for_service('forward_kinematic_solver')
+    try:
+        # 由于FK和IK共用同一种Service type，FK的时候targetPose和targetOri只需要
+        # 发送两个dummy list就好
+        kine_solver = rospy.ServiceProxy('forward_kinematic_solver', Solver)
+        resp = kine_solver(LeftRight='left', limbTwist=limb_cur, 
+                                targetPos=target_pos, targetOri=target_ori)
+    except rospy.ServiceException as e:
+        print("Service call failed %s" % e)
+        return
+    
+    # FK的返回值存在limbPose里面，IK的存在limbTwist里面
+    limbPose = resp.limbPose
+    print("Solved position: ", limbPose[0:3])
+    print("Solved orientation: ", tf.transformations.euler_from_quaternion(limbPose[3:7]))
+
+
 def task2():
     rospy.init_node('switch_light_motion', anonymous=True)
+
+    # 前向运动学demo，计算初始左手掌的坐标和姿态角
+    initial_pose_left()
 
     # 画方形demo
     point()

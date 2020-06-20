@@ -40,9 +40,11 @@ source ${ubt_sim_ws_HOME}/devel/setup.bash
 rosrun thewalkingdead solver_server_node
 # [ INFO] [1592677570.580549330]: Ready to Solve.
 
-# Service name is "kinematic_solver"
+# IK Service name is "inverse_kinematic_solver"
+# FK Service name is "forward_kinematic_solver"
 # Message type is "Solver", read more in thewalkingdead/srv/Solver.srv
-# For usage, see ik_demo.py
+#   Note that both IK and FK share the same service, see ik_demo.py for 
+#   usage of both.
 ```
 
 ## Task Status
@@ -133,7 +135,9 @@ rosrun thewalkingdead solver_server_node
     ```
 
 ## ChangeLog
+- 2020-06-20 #2 新增前向运动学Service, 支持左右手
 - 2020-06-20 新增反向运动学Service，仅支持左手
+
 
 
 

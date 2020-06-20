@@ -195,7 +195,7 @@ bool check_bound(VectorXd solve, MatrixXd bounds, int count)
     {
         float lb = bounds.row(i)[0], ub = bounds.row(i)[1];
         float val = solve(i);
-        if (val < lb && val > ub)
+        if (val < lb || val > ub)
         {
             ob_link.push_back(i);
         }
@@ -272,7 +272,23 @@ bool get_inverse_left(std::string urdf_path, VectorXd target_position_left, Vect
     return ik_flag;
 }
 
-bool solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
+bool get_forward_left(string urdf_path, VectorXd joints_val, VectorXd &result)
+{
+    Tree walker_tree;
+    kdl_parser::treeFromFile(urdf_path, walker_tree);
+
+    forward_kinematics_left(joints_val, walker_tree, result);
+}
+
+bool get_forward_right(string urdf_path, VectorXd joints_val, VectorXd &result)
+{
+    Tree walker_tree;
+    kdl_parser::treeFromFile(urdf_path, walker_tree);
+
+    forward_kinematics_right(joints_val, walker_tree, result);
+}
+
+bool inverse_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
 {
     string urdf_path = "/home/wyh/WalkerSimulationFor2020WAIC/walker_WAIC_18.04_v1.2_20200616/ubt_sim_ws/src/thewalkingdead/config/walker.urdf";
     string left_or_right = req.LeftRight;
@@ -330,6 +346,41 @@ bool solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solve
     return result;
 }
 
+bool forward_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdead::Solver::Response &res)
+{
+    string urdf_path = "/home/wyh/WalkerSimulationFor2020WAIC/walker_WAIC_18.04_v1.2_20200616/ubt_sim_ws/src/thewalkingdead/config/walker.urdf";
+    string left_or_right = req.LeftRight;
+    VectorXd jointVal(7);
+    VectorXd pose(7);
+    bool result = false;
+
+    for (int i = 0; i < 7; i++)
+    {
+        jointVal[i] = res.limbTwist[i];
+    }
+
+    if (left_or_right == "left")
+    {
+        result = get_forward_left(urdf_path, jointVal, pose);
+    }
+    else if (left_or_right == "right")
+    {
+        result = get_forward_right(urdf_path, jointVal, pose);
+    }
+    else
+    {
+        ROS_WARN("Should be 'left' or 'right'.");
+        return false;
+    }
+    
+    for (int i = 0; i < 7; i++)
+    {
+        res.limbPose[i] = pose[i];
+    }
+
+    return result;
+}
+
 int main(int argc, char **argv)
 {
     leftLimbBound << -0.7854, 3.1416,
@@ -343,7 +394,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "kinematic_solver_server");
     ros::NodeHandle n;
 
-    ros::ServiceServer service = n.advertiseService("kinematic_solver", solver_callback);
+    ros::ServiceServer inv_srv = n.advertiseService("inverse_kinematic_solver", inverse_solver_callback);
+    ros::ServiceServer for_srv = n.advertiseService("forward_kinematic_solver", forward_solver_callback);
     ROS_INFO("Ready to Solve.");
     ros::spin();
 
