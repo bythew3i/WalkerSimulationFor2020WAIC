@@ -11,12 +11,12 @@ from thewalkingdead.srv import Solver
 
 import math
 
-def point():
-    hand_pub = rospy.Publisher('/walker/leftHand/controller', JointCommand, queue_size=10)
+def point(hand):
+    hand_pub = rospy.Publisher('/walker/%sHand/controller'%hand, JointCommand, queue_size=10)
 
     duration = 0.5
     time = 0
-    hand_cur = rospy.wait_for_message("/walker/leftHand/joint_states", JointState).position
+    hand_cur = rospy.wait_for_message("/walker/%sHand/joint_states"%hand, JointState).position
 
     hand_tar = [0.785, 0.785, 0, 0, 1.571, 1.571, 1.571, 1.571, 1.571, 1.571]
 
@@ -70,6 +70,15 @@ def test_solver():
         limb_pub.publish(limb_msg)
 
         rate.sleep()
+    
+    print("FK")
+    rospy.wait_for_service('forward_kinematic_solver')
+    forward_solver = rospy.ServiceProxy('forward_kinematic_solver', Solver)
+    fres = forward_solver(LeftRight='left', limbTwist=limb_cur,
+                                targetPos=[0]*3, targetOri=[0]*4)
+    
+    print("Position", fres.limbPose[0:3])
+    print("Orientation", tf.transformations.euler_from_quaternion(fres.limbPose[3:7]))
 
 def test_solver2():
     # Send to solver
@@ -145,7 +154,7 @@ def test_solver3():
 
 def test_solver4():
     # Send to solver
-    limb_cur = rospy.wait_for_message('/walker/leftLimb/joint_states', JointState).position
+    limb_cur = rospy.wait_for_message('/walker/rightLimb/joint_states', JointState).position
     target_pos = [0.45, 0.1, 0.0]
     target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 0.785)
     
@@ -161,6 +170,125 @@ def test_solver4():
     limb_tar = resp.limbTwist
     print("Solved: ", limb_tar)
     limb_pub = rospy.Publisher('/walker/leftLimb/controller', JointCommand, queue_size=10)
+
+    time = 0
+    duration = 5
+    step = [(tar - cur) / duration * 0.001 for tar, cur in zip(limb_tar, limb_cur)]
+
+    rate = rospy.Rate(1e3)
+    while time < duration * 1000:
+        time += 1
+        limb_cur = [cur + st for cur, st in zip(limb_cur, step)]
+
+        limb_msg = JointCommand()
+        limb_msg.mode = 5
+        limb_msg.command = limb_cur
+
+        limb_pub.publish(limb_msg)
+
+        rate.sleep()
+
+
+def test_solver_right():
+    # Send to solver
+    limb_cur = rospy.wait_for_message('/walker/leftLimb/joint_states', JointState).position
+    target_pos = [0.3, -0.1, 0.0]
+    target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 0.985)
+    
+    rospy.wait_for_service('inverse_kinematic_solver')
+    try:
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
+        resp = kine_solver(LeftRight='right', limbTwist=limb_cur, 
+                                targetPos=target_pos, targetOri=target_ori)
+    except rospy.ServiceException as e:
+        print("Service call failed %s" % e)
+        return
+    
+    limb_tar = resp.limbTwist
+    print("Solved: ", limb_tar)
+    limb_pub = rospy.Publisher('/walker/rightLimb/controller', JointCommand, queue_size=10)
+
+    time = 0
+    duration = 1
+    step = [(tar - cur) / duration * 0.001 for tar, cur in zip(limb_tar, limb_cur)]
+
+    rate = rospy.Rate(1e3)
+    while time < duration * 1000:
+        time += 1
+        limb_cur = [cur + st for cur, st in zip(limb_cur, step)]
+
+        limb_msg = JointCommand()
+        limb_msg.mode = 5
+        limb_msg.command = limb_cur
+
+        limb_pub.publish(limb_msg)
+
+        rate.sleep()
+    
+    print("FK")
+    rospy.wait_for_service('forward_kinematic_solver')
+    forward_solver = rospy.ServiceProxy('forward_kinematic_solver', Solver)
+    fres = forward_solver(LeftRight='right', limbTwist=limb_cur,
+                                targetPos=[0]*3, targetOri=[0]*4)
+    
+    print("Position", fres.limbPose[0:3])
+    print("Orientation", tf.transformations.euler_from_quaternion(fres.limbPose[3:7]))
+
+def test_solver_right2():
+    # Send to solver
+    limb_cur = rospy.wait_for_message('/walker/rightLimb/joint_states', JointState).position
+    target_pos = [0.3, -0.4, 0.0]
+    target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 1.571)
+    
+    rospy.wait_for_service('inverse_kinematic_solver')
+    try:
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
+        resp = kine_solver(LeftRight='right', limbTwist=limb_cur, 
+                                targetPos=target_pos, targetOri=target_ori)
+    except rospy.ServiceException as e:
+        print("Service call failed %s" % e)
+        return
+    
+    limb_tar = resp.limbTwist
+    print("Solved: ", limb_tar)
+    limb_pub = rospy.Publisher('/walker/rightLimb/controller', JointCommand, queue_size=10)
+
+    time = 0
+    duration = 5
+    step = [(tar - cur) / duration * 0.001 for tar, cur in zip(limb_tar, limb_cur)]
+
+    rate = rospy.Rate(1e3)
+    while time < duration * 1000:
+        time += 1
+        limb_cur = [cur + st for cur, st in zip(limb_cur, step)]
+
+        limb_msg = JointCommand()
+        limb_msg.mode = 5
+        limb_msg.command = limb_cur
+
+        limb_pub.publish(limb_msg)
+
+        rate.sleep()
+
+
+def test_solver_right3():
+    # Send to solver
+    limb_cur = rospy.wait_for_message('/walker/rightLimb/joint_states', JointState).position
+    target_pos = [0.45, -0.4, 0.0]
+    target_ori = tf.transformations.quaternion_from_euler(-0.785, 0.3927, 1.571)
+    
+    rospy.wait_for_service('inverse_kinematic_solver')
+    try:
+        kine_solver = rospy.ServiceProxy('inverse_kinematic_solver', Solver)
+        resp = kine_solver(LeftRight='right', limbTwist=limb_cur, 
+                                targetPos=target_pos, targetOri=target_ori)
+    except rospy.ServiceException as e:
+        print("Service call failed %s" % e)
+        return
+    
+    limb_tar = resp.limbTwist
+    print("Solved: ", limb_tar)
+    limb_pub = rospy.Publisher('/walker/rightLimb/controller', JointCommand, queue_size=10)
 
     time = 0
     duration = 5
@@ -265,15 +393,21 @@ def task2():
     # 前向运动学demo，计算初始左手掌的坐标和姿态角
     initial_pose_left()
 
-    # 画方形demo
-    point()
-    test_solver()
-    test_solver2()
-    test_solver3()
-    test_solver4()
-    test_solver()
+    # 左手画方形demo
+    # point('left')
+    # test_solver()
+    # test_solver2()
+    # test_solver3()
+    # test_solver4()
+    # test_solver()
 
-    # 画圈圈demo
+    # 右手画直角demo
+    point('right')
+    test_solver_right()
+    test_solver_right2()
+    test_solver_right3()
+
+    # 左手画圈圈demo
     # point()
     # test_solver()
     # test_solver_circle()
