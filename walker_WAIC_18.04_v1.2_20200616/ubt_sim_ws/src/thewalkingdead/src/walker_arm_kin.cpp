@@ -361,8 +361,10 @@ bool forward_solver_callback(thewalkingdead::Solver::Request &req, thewalkingdea
 
     for (int i = 0; i < 7; i++)
     {
-        jointVal[i] = res.limbTwist[i];
+        jointVal[i] = req.limbTwist[i];
     }
+
+    cout << "jointVal received: " << endl << jointVal << endl;
 
     if (left_or_right == "left")
     {
