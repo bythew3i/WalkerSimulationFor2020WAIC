@@ -8,6 +8,7 @@ from geometry_msgs.msg import Twist, WrenchStamped
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
 import tf
+from webots_api.srv import SceneSelection
 
 
 
@@ -23,6 +24,7 @@ class Solver10(object):
         self.mu = 1e-6
 
         # service manage
+        self.scene_service = None
         self.legmotion_service = None 
         self.ik_service = None 
         self.fk_service = None
@@ -138,6 +140,12 @@ class Solver10(object):
 
 
         ### Services
+        rospy.wait_for_service('/walker/sence', timeout=10)
+        self.scene_service = rospy.ServiceProxy(
+            "/walker/sence", 
+            SceneSelection
+        )
+
         rospy.wait_for_service('/Leg/TaskScheduler', timeout=10)
         self.legmotion_service = rospy.ServiceProxy(
             "/Leg/TaskScheduler", 
@@ -157,6 +165,8 @@ class Solver10(object):
         )
 
 
+        ## Select the scene
+        self.scene_service(scene_name="OpenFridge", nav=False, vision=False)
 
         # Start Leg Motion 
         self.legmotion_start()
@@ -181,6 +191,7 @@ class Solver10(object):
             if self.legstatus.data in ["stopping", "standInit"]:
                 self.log("Waiting to stable")
             
+            ## Action1: move back for extra space
             elif action==1:
                 self.log("Action 1")
                 if self.stepnum.data < 2:
@@ -209,6 +220,7 @@ class Solver10(object):
                     self.legmotion_stop()
                     action = 2
 
+            ## Action 2: raise right limb and hold the fridge handle
             elif action==2:
                 self.log("Action 2")
                 if timer_for != 2:
@@ -255,6 +267,7 @@ class Solver10(object):
                     action = 3
                     self.legmotion_start()
 
+            # Action3: hold the handle and move to open the door
             elif action==3:
                 self.log("Action 3")
 
