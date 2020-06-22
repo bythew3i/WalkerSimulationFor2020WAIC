@@ -9,7 +9,7 @@
 
 - [ROS_tutorial](https://www.youtube.com/watch?v=Q5y-3aZdzfQ&list=PLJNGprAk4DF5PY0kB866fEZfz6zMLJTF8)
 - [Writing a Simple Publisher and Subscriber (Python)](http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28python%29)
-- [rospy services](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29)
+- [Writing a Simple Service and Client (Python)](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29)
 
 
 ## Setup
