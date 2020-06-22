@@ -278,7 +278,7 @@ class Solver10(object):
                 rightlimb_pub.publish(rightlimb_msg)
 
 
-                if self.stepnum.data < 46:
+                if self.stepnum.data < 42:
                     legmotion_msg.linear.x = -0.04
                     legmotion_msg.linear.y = -0.04
                     legmotion_msg.angular.z = 0.1
