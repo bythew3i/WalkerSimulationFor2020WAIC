@@ -50,11 +50,11 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 ## Task Status
 
 ### (总计100分) 运动控制模式 Control Mode
-- [x] （10分）任务1：开电灯 
+- [x] ~~（10分）任务1：开电灯~~ 
     ```
     rosservice call /walker/sence "{scene_name: SwitchLight, nav: false, vision: false}"
     ```
-- [x] （20分）任务2：拿饮料罐 
+- [x] ~~（20分）任务2：拿饮料罐~~ 
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"
     ```
@@ -62,7 +62,7 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: false}"
     ```
-- [x] （40分）任务10：开冰箱
+- [x] ~~（40分）任务10：开冰箱~~
     ```
     rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: false}"
     ```
