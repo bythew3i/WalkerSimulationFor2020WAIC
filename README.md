@@ -129,7 +129,7 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
     ```
     rosservice call /walker/sence "{scene_name: CarryBox, nav: false, vision: false}"
     ```
-- [ ] （60分）任务15：上楼梯
+- [x] ~~（60分）任务15：上楼梯~~
     ```
     rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
     ```

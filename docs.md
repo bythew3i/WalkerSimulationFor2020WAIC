@@ -4,6 +4,7 @@
 - [Resources](#resources)
 - [Setup](#setup)
 - [Run Walk Demo](#run-walk-demo)
+- [Run Task 1](#run-task-1)
 
 ## Resources
 
@@ -27,11 +28,8 @@ catkin_make
 source devel/setup.bash
 ```
 
-Then you can change directory to `thewalkingdead` package:
-```bash
-roscd thewalkingdead
-```
-
+> TODO: 
+> Launch FIle setups
 
 
 ## Run Walk Demo
@@ -45,4 +43,59 @@ Run python script
 rosrun thewalkingdead walk_demo.py
 ```
 
+## Run Task 1
+> TODO
 
+## Run Task 2
+> TODO
+
+## Run Task 3
+> TODO
+
+## Run Task 4
+> TODO
+
+## Run Task 5
+> TODO
+
+## Run Task 6
+> TODO
+
+## Run Task 7
+> TODO
+
+## Run Task 8
+> TODO
+
+## Run Task 8
+> TODO
+
+## Run Task 10
+> TODO
+
+## Run Task 11
+> TODO
+
+## Run Task 12
+> TODO
+
+## Run Task 13
+> TODO
+
+## Run Task 14
+> TODO
+
+## Run Task 15
+> TODO
+
+notes:
+- 6秒左右完成任务
+- 没有做优化， 具有不稳定性，有一定可能会摔倒
+- 采用倒立摆模型
+- 除了Ref中的dynamic时候的步态规划， 还分别增加了起步与止步的步态规划
+- 参考: 
+    - 双足机器人爬楼梯步态规划与参数 吴飞 （文中起码有超出10处错误）
+    - 双足机器人不行仿真预实验研究 史耀强
+
+Python Dependancy:
+- from scipy.interpolate import KroghInterpolator
