@@ -11,7 +11,7 @@ H = 0.1404
 G = 9.8
 Zch = 0.098
 W = 0.220
-S = 0.31
+S = 0.30
 Ht = 0.1
 
 # Adjustable variables
@@ -21,7 +21,7 @@ Hm = Ht+0.05
 
 Hm_START = T/4
 INIT_TIME = 1.0
-DELTA_FAC = 1.0
+DELTA_FAC = 1.1
 
 
 
@@ -186,8 +186,8 @@ def f_delta(t):
     y_ce = W/2 - L*sin(f_delta_cm(t))
     z_ce = L*cos(f_delta_cm(t)) - Zch
     if t < T:
-        return atan(y_ce/z_ce) 
-    return -atan(y_ce/z_ce)
+        return atan(y_ce/z_ce) * DELTA_FAC
+    return -atan(y_ce/z_ce) * DELTA_FAC
 
 
 
@@ -484,7 +484,6 @@ from webots_api.srv import SceneSelection
 
 
 def robot_update_all_delta(pos, delta):
-    delta *= DELTA_FAC
     pos[1] = delta
     pos[7] = delta
     pos[5] = -delta
