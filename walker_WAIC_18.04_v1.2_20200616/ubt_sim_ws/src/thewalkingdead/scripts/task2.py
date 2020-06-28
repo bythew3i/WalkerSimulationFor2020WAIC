@@ -211,8 +211,8 @@ def stage5():
     # Send to solver
 
     limb_cur = rospy.wait_for_message('/walker/leftLimb/joint_states', JointState).position
-    target_pos = [-0.015880440026308996, 0.3586736446689998, -0.494047684295732]
-    target_eul = [1.570798949528835, -0.0016463071519337736, 1.5707896460175066]
+    target_pos = [-0.015880440026308996, 0.3586736446689998, -0.394047684295732]
+    target_eul = [1.370798949528835, -0.0016463071519337736, 1.2707896460175066]
 
     target_pos = [p+x for p, x in zip(target_pos, [0.36, 0.08, 0.36])]
     target_eul = [e+x for e, x in zip(target_eul, [-1.571, 0.0, 0.3927-0.15])]
