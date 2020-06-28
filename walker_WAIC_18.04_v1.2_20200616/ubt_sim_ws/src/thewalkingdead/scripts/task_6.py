@@ -50,16 +50,6 @@ def startWalk():
         # control leg_motion by publishing msg
     pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
     
-    rate = rospy.Rate(10) # 10HZ
-    while not rospy.is_shutdown():
-
-        # Create Twist MSG
-        twist_msg = Twist()
-        twist_msg.linear.x = 0.05
-        # rospy.logdebug(twist_msg)
-
-        pub.publish(twist_msg)
-        rate.sleep()
 
 def stopWalk():
     try:
@@ -77,20 +67,13 @@ def stopWalk():
         # control leg_motion by publishing msg
     pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
 
-class subscriber():
-    def __init__(self):
-        self.sub = None
-        self.msg = None
+# class subscriber():
+#     def __init__(self):
+#         self.sub = None
+#         self.msg = None
 
 
 def move(node, tar_cmd=[0]*7, duration=0.1):
-    """[summary]
-
-    Args:
-        node ([type]): [description]
-        tar_cmd ([type], optional): [description]. Defaults to [0]*7.
-        duration (float, optional): [description]. Defaults to 0.1.
-    """
     pub = rospy.Publisher('/walker/'+node+'/controller', JointCommand, queue_size=10)
 
     time = 0
@@ -98,7 +81,6 @@ def move(node, tar_cmd=[0]*7, duration=0.1):
 
     move_per_step = [(tar - cur) / duration * 0.001 for cur, tar in zip(cur_cmd, tar_cmd)]
     rate = rospy.Rate(1000)
-
     while time < duration*1000:
         time += 1
         cur_cmd = [cur+step for cur, step in zip(cur_cmd, move_per_step)]
@@ -108,6 +90,24 @@ def move(node, tar_cmd=[0]*7, duration=0.1):
         pub.publish(msg)
         rate.sleep()
     pass
+
+# def move(node, tar_cmd=[0]*7, duration=0.1):
+#     pub = rospy.Publisher('/walker/'+node+'/controller', JointCommand, queue_size=10)
+
+#     time = 0
+#     cur_cmd = rospy.wait_for_message("/walker/"+node+"/joint_states", JointState).position
+
+#     move_per_step = [(tar - cur) / duration * 0.001 for cur, tar in zip(cur_cmd, tar_cmd)]
+#     rate = rospy.Rate(1000)
+#     while time < duration*1000:
+#         time += 1
+#         cur_cmd = [cur+step for cur, step in zip(cur_cmd, move_per_step)]
+#         msg = JointCommand()
+#         msg.mode = 5
+#         msg.command = cur_cmd
+#         pub.publish(msg)
+#         rate.sleep()
+#     pass
 
 
 class Robot():
@@ -235,7 +235,7 @@ def stage1(robot):
     tar_pos[1] += .023
     tar_pos[2] += -.05
     # robot.left_tar_pos = tar_pos
-    print("tar_pos", tar_pos)
+    # print("tar_pos", tar_pos)
     tar_cmd = robot.__pos2cmd__(tar_pos, left_right="left")
     print("tar_cmd", tar_cmd)
     tar_cmd = list(tar_cmd)
@@ -243,7 +243,7 @@ def stage1(robot):
     tar_cmd[5] = -.3
     tar_cmd[6] = -.3
     move(node='leftLimb', tar_cmd=tar_cmd, duration=.5)
-    robot.left_tar_pos = robot.__cmd2pos__(tar_cmd,"left")
+    robot.left_tar_pos = list(robot.__cmd2pos__(tar_cmd,"left"))
     # close left hand
     move(node="leftHand", tar_cmd=[1.5]*10)
 
@@ -280,7 +280,7 @@ def stage1(robot):
     tar_cmd[5] = .3
     tar_cmd[6] = -.3
     move(node='rightLimb', tar_cmd=tar_cmd, duration=.5)
-    robot.right_tar_pos = robot.__cmd2pos__(tar_cmd,"right")
+    robot.right_tar_pos = list(robot.__cmd2pos__(tar_cmd,"right"))
     # # close right hand
     move(node="rightHand", tar_cmd=[1.5]*10)
 
@@ -291,30 +291,20 @@ def stage2(robot):
 
     print("start walking")
     startWalk()
-
-    while True:
-        # # rotation
-        # alpha = robot.waistMeasured[3]
-        # beta = robot.waistMeasured[4]
-        # gamma = robot.waistMeasured[5]
-
-        # Rz = np.matrix([[cos(alpha), -sin(alpha),0],
-        #                 [sin(alpha), cos[alpha], 0],
-        #                 [0, 0, 1]])
-        # Ry = np.matrix([[cos(beta), 0, sin(beta)],
-        #                 [0, 1, 0],
-        #                 [-sin(beta), 0, cos(beta)]])
-        # Rx = np.matrix([[1, 0, 0],
-        #                 [0, cos(gamma), -sin(gamma)],
-        #                 [0, sin(gamma), cos(gamma)]])
-        # R = Rz@Ry@Rx
+    
+    pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
+    left_limb_pub = rospy.Publisher('/walker/'+"left"+'/controller', JointCommand, queue_size=10)
+    right_limb_pub = rospy.Publisher('/walker/'+"right"+'/controller', JointCommand, queue_size=10)
+    rate = rospy.Rate(1000) # 10HZ
+    while not rospy.is_shutdown():
+        twist_msg = Twist()
+        twist_msg.linear.x = 0.05
         
-        # v = np.array(robot.left_tar_pos)
-        
-        # close left hand
-        move(node="leftHand", tar_cmd=[1.5]*10, duration=0.002)
-        # close left hand
-        move(node="rightHand", tar_cmd=[1.5]*10, duration=0.002)
+        pub.publish(twist_msg)
+        # # close left hand
+        # move(node="leftHand", tar_cmd=[1.5]*10, duration=0.002)
+        # # close left hand
+        # move(node="rightHand", tar_cmd=[1.5]*10, duration=0.002)
         
         # tar_pos[1] += robot.waistMeasured[1] #FIX
 
@@ -322,30 +312,41 @@ def stage2(robot):
         tar_pos = robot.left_tar_pos
         # mu = 5e-5
         cur_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left") # FIX
-        tar_pos[0] = cur_pos[0]-robot.lwrench.force.x * mu if robot.lwrench.force.x < 5 else 0 #FIX
+        tar_pos[0] = cur_pos[0]-robot.lwrench.force.x * mu if robot.lwrench.force.x < 5 else cur_pos[0] #FIX
         tar_pos[1] = cur_pos[1]-robot.lwrench.force.y * mu # FIX
         tar_pos[2] = cur_pos[2]-robot.lwrench.force.z * mu # FIX
-        ros.log(tar_pos)
+        rospy.loginfo(tar_pos)
         tar_cmd = robot.__pos2cmd__(tar_pos, left_right="left")
-        print("tar_cmd", tar_cmd)
+        # print("tar_cmd", tar_cmd)
         tar_cmd = list(tar_cmd)
         tar_cmd[4] = 2.447
         tar_cmd[5] = -.3
         tar_cmd[6] = -.3
-        move(node='leftLimb', tar_cmd=tar_cmd, duration=.001)
+        # move(node='leftLimb', tar_cmd=tar_cmd, duration=.001)
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = tar_cmd
+        left_limb_pub.publish(msg)
+        
 
         tar_pos = robot.right_tar_pos
         cur_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-        tar_pos[0] = cur_pos[0]-robot.rwrench.force.x * mu if robot.rwrench.force.x < 5 else 0 #FIX
-        tar_pos[1] = cur_pos[0]-robot.rwrench.force.y * mu
-        tar_pos[2] = cur_pos[0]-robot.rwrench.force.z * mu
+        tar_pos[0] = cur_pos[0]-robot.rwrench.force.x * mu if robot.rwrench.force.x < 5 else cur_pos[0] #FIX
+        tar_pos[1] = cur_pos[1]-robot.rwrench.force.y * mu
+        tar_pos[2] = cur_pos[2]-robot.rwrench.force.z * mu
 
         tar_cmd = robot.__pos2cmd__(tar_pos,left_right="right")
         tar_cmd = list(tar_cmd)
         tar_cmd[4] = -2.447
         tar_cmd[5] = .3
         tar_cmd[6] = -.3
-        move(node='rightLimb', tar_cmd=tar_cmd, duration=.001)
+        # move(node='rightLimb', tar_cmd=tar_cmd, duration=.001)
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = tar_cmd
+        right_limb_pub.publish(msg)
+        
+        rate.sleep()
     pass
 
 def main():
