@@ -38,7 +38,7 @@ def walk_demo():
         # Create Twist MSG
         twist_msg = Twist()
         twist_msg.linear.x = 0.1
-        rospy.logdebug(twist_msg)
+        # rospy.logdebug(twist_msg)
 
         pub.publish(twist_msg)
         rate.sleep()
