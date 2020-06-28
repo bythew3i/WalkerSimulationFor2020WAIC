@@ -30,31 +30,14 @@ git fetch upstream master
 
 ```
 
-## Use of Inverse Kinematics
-```bash
-# Build service, in ${ubt_sim_ws}
-catkin_make
-
-# Run service
-source ${ubt_sim_ws_HOME}/devel/setup.bash
-roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.urdf}
-# [ INFO] [1592677570.580549330]: Ready to Solve.
-
-# IK Service name is "inverse_kinematic_solver"
-# FK Service name is "forward_kinematic_solver"
-# Message type is "Solver", read more in thewalkingdead/srv/Solver.srv
-#   Note that both IK and FK share the same service, see ik_demo.py for 
-#   usage of both.
-```
-
 ## Task Status
 
 ### (总计100分) 运动控制模式 Control Mode
-- [ ] （10分）任务1：开电灯 
+- [x] ~~（10分）任务1：开电灯~~ 
     ```
     rosservice call /walker/sence "{scene_name: SwitchLight, nav: false, vision: false}"
     ```
-- [ ] （20分）任务2：拿饮料罐 
+- [x] ~~（20分）任务2：拿饮料罐~~ 
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"
     ```
@@ -62,7 +45,7 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: false}"
     ```
-- [ ] （40分）任务10：开冰箱
+- [x] ~~（40分）任务10：开冰箱~~
     ```
     rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: false}"
     ```
@@ -129,7 +112,7 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
     ```
     rosservice call /walker/sence "{scene_name: CarryBox, nav: false, vision: false}"
     ```
-- [ ] （60分）任务15：上楼梯
+- [x] ~~（60分）任务15：上楼梯~~
     ```
     rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
     ```
