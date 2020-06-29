@@ -7,7 +7,7 @@
         <param name="walker_urdf_path" value="$(arg urdf_path)" />
     </node>
 
-    <node type="task2.py" name="task2" pkg="thewalkingdead" output="screen">
+    <node type="task2.py" name="task2" pkg="thewalkingdead" output="screen" required="true">
     </node>
 
 </launch>

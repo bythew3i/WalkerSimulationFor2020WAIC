@@ -33,13 +33,11 @@ source devel/setup.bash
 
 
 ## Run Walk Demo
-Auth to use leg_motion
 ```bash
+# Auth to use leg_motion
 roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
-```
 
-Run python script
-```bash
+# Run python script
 rosrun thewalkingdead walk_demo.py
 ```
 
@@ -61,10 +59,14 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 ```
 
 ## Run Task 1
-> `roslaunch thewalkdingdead task1.launch`
+```bash
+roslaunch thewalkingdead task1.launch
+```
 
 ## Run Task 2
-> `roslaunch thewalkdingdead task2.launch`
+```bash
+roslaunch thewalkingdead task2.launch
+```
 
 ## Run Task 3
 > TODO
@@ -88,7 +90,12 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 > TODO
 
 ## Run Task 10
-> TODO
+> **Attention:**
+> You may notice the program is excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
+
+```bash
+roslaunch thewalkingdead task10.launch
+```
 
 ## Run Task 11
 > TODO
@@ -103,7 +110,9 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 > TODO
 
 ## Run Task 15
-> TODO
+```bash
+roslaunch thewalkingdead task15.launch
+```
 
 notes:
 - 6秒左右完成任务

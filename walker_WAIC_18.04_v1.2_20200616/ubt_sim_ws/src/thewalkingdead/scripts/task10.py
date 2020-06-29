@@ -7,9 +7,8 @@ from std_msgs.msg import Int64, String
 from geometry_msgs.msg import Twist, WrenchStamped
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
-import tf
 from webots_api.srv import SceneSelection
-
+import time
 
 
 class Solver10(object):
@@ -193,7 +192,7 @@ class Solver10(object):
             
             ## Action1: move back for extra space
             elif action==1:
-                self.log("Action 1")
+                self.log("Action 1: move back for extra space")
                 if self.stepnum.data < 2:
                     if timer_for != 1:
                         # timer 1 start
@@ -222,7 +221,7 @@ class Solver10(object):
 
             ## Action 2: raise right limb and hold the fridge handle
             elif action==2:
-                self.log("Action 2")
+                self.log("Action 2: raise right limb and hold the fridge handle")
                 if timer_for != 2:
                     # timer 2 start
                     timer_for = 2
@@ -269,7 +268,7 @@ class Solver10(object):
 
             # Action3: hold the handle and move to open the door
             elif action==3:
-                self.log("Action 3")
+                self.log("Action3: hold the handle and move to open the door")
 
                 fx = self.rwristwrench.wrench.force.x
                 fy = self.rwristwrench.wrench.force.y
@@ -304,6 +303,7 @@ class Solver10(object):
                 
             else:
                 self.log("No action is performing")
+                break
 
             rate.sleep()
         
@@ -311,6 +311,8 @@ class Solver10(object):
 
 if __name__ == '__main__':
     try:
+        print("\nWait 10 seconds to start all required services ...\n")
+        time.sleep(10)
         solver = Solver10()
         solver.solve()
     except rospy.ROSInterruptException as e:
