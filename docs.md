@@ -106,7 +106,9 @@ roslaunch thewalkingdead task10.launch
 > TODO
 
 ## Run Task 14
-> TODO
+```bash
+roslaunch thewalkingdead task14.launch
+```
 
 ## Run Task 15
 ```bash

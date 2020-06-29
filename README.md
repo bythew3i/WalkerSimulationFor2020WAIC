@@ -108,7 +108,7 @@ git fetch upstream master
 > - \>= 60s：10分
 > 
 
-- [ ] （60分）任务14：搬箱子
+- [x] ~~（60分）任务14：搬箱子~~
     ```
     rosservice call /walker/sence "{scene_name: CarryBox, nav: false, vision: false}"
     ```
