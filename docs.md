@@ -28,8 +28,6 @@ catkin_make
 source devel/setup.bash
 ```
 
-> TODO: 
-> Launch FIle setups
 
 
 ## Run Walk Demo
@@ -91,9 +89,10 @@ roslaunch thewalkingdead task2.launch
 
 ## Run Task 10
 > **Attention:**
-> You may notice the program is excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
+> You may notice the program is **not** excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
 
 ```bash
+# Wait first 10 seconds to start the required services
 roslaunch thewalkingdead task10.launch
 ```
 
