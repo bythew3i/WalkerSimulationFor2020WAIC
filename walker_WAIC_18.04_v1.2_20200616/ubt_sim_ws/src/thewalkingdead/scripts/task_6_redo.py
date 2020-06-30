@@ -3,6 +3,7 @@
 import rospy
 from webots_api.srv import SceneSelection, SceneSelectionRequest
 from walker_srvs.srv import leg_motion_MetaFuncCtrl, leg_motion_MetaFuncCtrlRequest
+from std_msgs.msg import Int64
 from geometry_msgs.msg import Twist, WrenchStamped
 from ubt_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
@@ -29,6 +30,7 @@ class Robot():
         self.step_rightHand_cmd = None
         self.lwrist_sensor = None
         self.rwrist_sensor = None
+        self.leg_step_num = None
 
                  
         # Establish services
@@ -79,6 +81,11 @@ class Robot():
             "/sensor/ft/rwrist",
             WrenchStamped,
             self.rwristSensorSubscriber
+        )
+        rospy.Subscriber(
+            "/Leg/StepNum",
+            Int64,
+            self.legStepNumSubscriber
         )
         
         # Initialize publishers
@@ -157,6 +164,9 @@ class Robot():
     
     def rwristSensorSubscriber(self, msg):
         self.rwrist_sensor = msg.wrench
+    
+    def legStepNumSubscriber(self,msg):
+        self.leg_step_num = msg.data
     
     # @staticmethod  
     def __cmd2pos__(self, cmd, left_right):
@@ -404,8 +414,9 @@ def main():
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     mu = 5e-6
+    step_num = 11
     
-    while not rospy.is_shutdown() and time_elapsed < duration:
+    while not rospy.is_shutdown() and robot.leg_step_num < step_num:
         legmotion_msg = Twist()
         legmotion_msg.linear.x = 0.2
         robot.legmotion_publisher.publish(legmotion_msg)
