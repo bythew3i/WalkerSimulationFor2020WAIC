@@ -41,7 +41,7 @@ git fetch upstream master
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"
     ```
-- [ ] （30分）任务6：推平板车
+- [x] ~~（30分）任务6：推平板车~~
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: false}"
     ```
