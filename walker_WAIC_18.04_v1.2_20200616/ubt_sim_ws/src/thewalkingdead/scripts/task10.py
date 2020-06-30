@@ -7,12 +7,11 @@ from std_msgs.msg import Int64, String
 from geometry_msgs.msg import Twist, WrenchStamped
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
-import tf
 from webots_api.srv import SceneSelection
+import time
 
 
-
-class Solver10(object):
+class Task10(object):
     def __init__(self):
 
         self.logmsg = ""
@@ -134,9 +133,9 @@ class Solver10(object):
         ### Messages
         legmotion_msg = Twist()
         rightlimb_msg = JointCommand()
-        Solver10.resize(rightlimb_msg.command, 7)
+        Task10.resize(rightlimb_msg.command, 7)
         righthand_msg = JointCommand()
-        Solver10.resize(righthand_msg.command, 10)
+        Task10.resize(righthand_msg.command, 10)
 
 
         ### Services
@@ -193,7 +192,7 @@ class Solver10(object):
             
             ## Action1: move back for extra space
             elif action==1:
-                self.log("Action 1")
+                self.log("Action 1: move back for extra space")
                 if self.stepnum.data < 2:
                     if timer_for != 1:
                         # timer 1 start
@@ -222,7 +221,7 @@ class Solver10(object):
 
             ## Action 2: raise right limb and hold the fridge handle
             elif action==2:
-                self.log("Action 2")
+                self.log("Action 2: raise right limb and hold the fridge handle")
                 if timer_for != 2:
                     # timer 2 start
                     timer_for = 2
@@ -269,7 +268,7 @@ class Solver10(object):
 
             # Action3: hold the handle and move to open the door
             elif action==3:
-                self.log("Action 3")
+                self.log("Action3: hold the handle and move to open the door")
 
                 fx = self.rwristwrench.wrench.force.x
                 fy = self.rwristwrench.wrench.force.y
@@ -287,7 +286,7 @@ class Solver10(object):
 
                 tar_cmd = self.__pos2cmd__(tar_pos, cur_cmd)
 
-                Solver10.copy(tar_cmd, rightlimb_msg.command)
+                Task10.copy(tar_cmd, rightlimb_msg.command)
                 rightlimb_pub.publish(rightlimb_msg)
 
 
@@ -304,6 +303,7 @@ class Solver10(object):
                 
             else:
                 self.log("No action is performing")
+                break
 
             rate.sleep()
         
@@ -311,8 +311,10 @@ class Solver10(object):
 
 if __name__ == '__main__':
     try:
-        solver = Solver10()
-        solver.solve()
+        print("\nWait 10 seconds to start all required services ...\n")
+        time.sleep(10)
+        task = Task10()
+        task.solve()
     except rospy.ROSInterruptException as e:
         print("ROS Interrupted: {}".format(e))
 

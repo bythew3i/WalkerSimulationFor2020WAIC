@@ -10,7 +10,7 @@ def stage1():
     hand_pub = rospy.Publisher('/walker/leftHand/controller', JointCommand, queue_size=10)
     limb_pub = rospy.Publisher('/walker/leftLimb/controller', JointCommand, queue_size=10)
 
-    duration = 10
+    duration = 0.7
     time = 0
     hand_cur = rospy.wait_for_message("/walker/leftHand/joint_states", JointState).position
     limb_cur = rospy.wait_for_message("/walker/leftLimb/joint_states", JointState).position
@@ -42,7 +42,7 @@ def stage1():
 def stage2():
     limb_pub = rospy.Publisher('/walker/leftLimb/controller', JointCommand, queue_size=10)
 
-    duration = 8
+    duration = 0.5
     time = 0
     limb_cur = rospy.wait_for_message("/walker/leftLimb/joint_states", JointState).position
 
@@ -73,7 +73,7 @@ def goto_task1():
         print(str(exc))
 
 def task1():
-    rospy.init_node('switch_light_motion', anonymous=True)
+    rospy.init_node('task1', anonymous=True)
 
     interllude = rospy.Duration(0.5, 0)
     

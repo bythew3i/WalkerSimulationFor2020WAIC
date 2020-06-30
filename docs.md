@@ -4,6 +4,7 @@
 - [Resources](#resources)
 - [Setup](#setup)
 - [Run Walk Demo](#run-walk-demo)
+- [Run Task 1](#run-task-1)
 
 ## Resources
 
@@ -27,22 +28,101 @@ catkin_make
 source devel/setup.bash
 ```
 
-Then you can change directory to `thewalkingdead` package:
-```bash
-roscd thewalkingdead
-```
-
 
 
 ## Run Walk Demo
-Auth to use leg_motion
 ```bash
+# Auth to use leg_motion
 roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
-```
 
-Run python script
-```bash
+# Run python script
 rosrun thewalkingdead walk_demo.py
 ```
 
+## Use of Inverse Kinematics
+```bash
+# Build service, in ${ubt_sim_ws}
+catkin_make
 
+# Run service
+source ${ubt_sim_ws_HOME}/devel/setup.bash
+roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.urdf}
+# [ INFO] [1592677570.580549330]: Ready to Solve.
+
+# IK Service name is "inverse_kinematic_solver"
+# FK Service name is "forward_kinematic_solver"
+# Message type is "Solver", read more in thewalkingdead/srv/Solver.srv
+#   Note that both IK and FK share the same service, see ik_demo.py for 
+#   usage of both.
+```
+
+## Run Task 1
+```bash
+roslaunch thewalkingdead task1.launch
+```
+
+## Run Task 2
+```bash
+roslaunch thewalkingdead task2.launch
+```
+
+## Run Task 3
+> TODO
+
+## Run Task 4
+> TODO
+
+## Run Task 5
+> TODO
+
+## Run Task 6
+> TODO
+
+## Run Task 7
+> TODO
+
+## Run Task 8
+> TODO
+
+## Run Task 8
+> TODO
+
+## Run Task 10
+> **Attention:**
+> You may notice the program is **not** excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
+
+```bash
+# Wait first 10 seconds to start the required services
+roslaunch thewalkingdead task10.launch
+```
+
+## Run Task 11
+> TODO
+
+## Run Task 12
+> TODO
+
+## Run Task 13
+> TODO
+
+## Run Task 14
+```bash
+roslaunch thewalkingdead task14.launch
+```
+
+## Run Task 15
+```bash
+roslaunch thewalkingdead task15.launch
+```
+
+notes:
+- 6秒左右完成任务
+- 没有做优化， 具有不稳定性，有一定可能会摔倒
+- 采用倒立摆模型
+- 除了Ref中的dynamic时候的步态规划， 还分别增加了起步与止步的步态规划
+- 参考: 
+    - 双足机器人爬楼梯步态规划与参数 吴飞 （文中起码有超出10处错误）
+    - 双足机器人不行仿真预实验研究 史耀强
+
+Python Dependancy:
+- from scipy.interpolate import KroghInterpolator
