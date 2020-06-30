@@ -11,7 +11,7 @@ from webots_api.srv import SceneSelection
 import time
 
 
-class Solver10(object):
+class Task10(object):
     def __init__(self):
 
         self.logmsg = ""
@@ -133,9 +133,9 @@ class Solver10(object):
         ### Messages
         legmotion_msg = Twist()
         rightlimb_msg = JointCommand()
-        Solver10.resize(rightlimb_msg.command, 7)
+        Task10.resize(rightlimb_msg.command, 7)
         righthand_msg = JointCommand()
-        Solver10.resize(righthand_msg.command, 10)
+        Task10.resize(righthand_msg.command, 10)
 
 
         ### Services
@@ -286,7 +286,7 @@ class Solver10(object):
 
                 tar_cmd = self.__pos2cmd__(tar_pos, cur_cmd)
 
-                Solver10.copy(tar_cmd, rightlimb_msg.command)
+                Task10.copy(tar_cmd, rightlimb_msg.command)
                 rightlimb_pub.publish(rightlimb_msg)
 
 
@@ -313,8 +313,8 @@ if __name__ == '__main__':
     try:
         print("\nWait 10 seconds to start all required services ...\n")
         time.sleep(10)
-        solver = Solver10()
-        solver.solve()
+        task = Task10()
+        task.solve()
     except rospy.ROSInterruptException as e:
         print("ROS Interrupted: {}".format(e))
 
