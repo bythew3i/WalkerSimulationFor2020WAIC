@@ -182,14 +182,6 @@ class Robot():
         )
         return list(resp.limbTwist)
     
-    # a function that publishes all the messages
-    # def publish(self):
-    #     self.leftLimbPublisher.publish(self.step_rightLimb_cmd)
-    #     self.rightLimbPublisher.publish(self.step_rightLimb_cmd)
-    #     self.legMotion_publisher.publish(self.legmotoin_msg)
-    #     pass
-    
-    
 def main():
     # Load scene
     rospy.wait_for_service("/walker/sence")
@@ -209,14 +201,15 @@ def main():
     # wait for subscriber to get msgs
     while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
         pass
+    
     # Action 1 cmds
-    LShoulderPitch=-.15
-    LShoulderRoll=-0.6
-    LShoulderYaw=-1.
-    LElbowRoll=-1.0
-    LElbowYaw=2.447
-    LWristRoll=-.6
-    LWristPitch=-.3
+    LShoulderPitch=1.78
+    LShoulderRoll=-1.4
+    LShoulderYaw=0.4
+    LElbowRoll=-1.39
+    LElbowYaw=0.488
+    LWristRoll=0.2 
+    LWristPitch=-0.3
     robot.tar_leftLimb_cmd = [LShoulderPitch,
                             LShoulderRoll,
                             LShoulderYaw,
@@ -224,13 +217,13 @@ def main():
                             LElbowYaw,
                             LWristRoll,
                             LWristPitch]
-    RShoulderPitch=.15
-    RShoulderRoll=-0.6
-    RShoulderYaw=1.
-    RElbowRoll=-1.0
-    RElbowYaw=-2.447
-    RWristRoll=.6
-    RWristPitch=-.3
+    RShoulderPitch=-1.78
+    RShoulderRoll=-1.4
+    RShoulderYaw=-0.4
+    RElbowRoll=-1.39
+    RElbowYaw=-0.448
+    RWristRoll=-0.2
+    RWristPitch=-0.3
     robot.tar_rightLimb_cmd = [RShoulderPitch,
                                RShoulderRoll,
                                RShoulderYaw,
@@ -239,7 +232,7 @@ def main():
                                RWristRoll,
                                RWristPitch]
     time_elapsed = 0
-    duration = 0.5
+    duration = 1
     rate = rospy.Rate(1000)
     initial_leftLimb_cmd = robot.leftLimb_cmd
     initial_rightLimb_cmd = robot.rightLimb_cmd
@@ -265,14 +258,15 @@ def main():
         rate.sleep()
         time_elapsed += 0.001
     
+    
     # Action 2 cmds
-    LShoulderPitch=-.15
-    LShoulderRoll=0
-    LShoulderYaw=-1.
-    LElbowRoll=-2.1
-    LElbowYaw=2.447
-    LWristRoll=-.6
-    LWristPitch=-.3
+    LShoulderPitch=1.295
+    LShoulderRoll=-0.55
+    LShoulderYaw=0.4
+    LElbowRoll=-1.39
+    LElbowYaw=0.488
+    LWristRoll=0.2 
+    LWristPitch=-0.3
     robot.tar_leftLimb_cmd = [LShoulderPitch,
                             LShoulderRoll,
                             LShoulderYaw,
@@ -280,13 +274,13 @@ def main():
                             LElbowYaw,
                             LWristRoll,
                             LWristPitch]
-    RShoulderPitch=.15
-    RShoulderRoll=0
-    RShoulderYaw=1.
-    RElbowRoll=-2.1
-    RElbowYaw=-2.447
-    RWristRoll=.6
-    RWristPitch=-.3
+    RShoulderPitch=-1.295
+    RShoulderRoll=-0.55
+    RShoulderYaw=-0.4
+    RElbowRoll=-1.39
+    RElbowYaw=-0.448
+    RWristRoll=-0.2
+    RWristPitch=-0.3
     robot.tar_rightLimb_cmd = [RShoulderPitch,
                                RShoulderRoll,
                                RShoulderYaw,
@@ -322,50 +316,50 @@ def main():
         time_elapsed += 0.001
     
     # Action 3 move limb straight forward
-    robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
-    robot.tar_leftLimb_pos[0] += 0.11
-    robot.tar_leftLimb_pos[1] += 0.023 #0.023
-    robot.tar_leftLimb_pos[2] += -0.045
-    robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
-    robot.tar_leftLimb_cmd[4] = 2.447
-    robot.tar_leftLimb_cmd[5] = -0.3
-    robot.tar_leftLimb_cmd[6] = -0.3
+    # robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+    # robot.tar_leftLimb_pos[0] += 0.11
+    # robot.tar_leftLimb_pos[1] += 0.023 #0.023
+    # robot.tar_leftLimb_pos[2] += -0.055 #-0.05
+    # robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+    # robot.tar_leftLimb_cmd[4] = 2.447
+    # robot.tar_leftLimb_cmd[5] = -0.3
+    # robot.tar_leftLimb_cmd[6] = -0.3
     
-    robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-    robot.tar_rightLimb_pos[0] += 0.11
-    robot.tar_rightLimb_pos[1] -= 0.023
-    robot.tar_rightLimb_pos[2] += -0.045
-    robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
-    robot.tar_rightLimb_cmd[4] = -2.447
-    robot.tar_rightLimb_cmd[5] = 0.3
-    robot.tar_rightLimb_cmd[6] = -0.3
+    # robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+    # robot.tar_rightLimb_pos[0] += 0.11
+    # robot.tar_rightLimb_pos[1] -= 0.023
+    # robot.tar_rightLimb_pos[2] += -0.055
+    # robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+    # robot.tar_rightLimb_cmd[4] = -2.447
+    # robot.tar_rightLimb_cmd[5] = 0.3
+    # robot.tar_rightLimb_cmd[6] = -0.3
     
-    time_elapsed = 0
-    duration = 0.5
-    rate = rospy.Rate(1000)
-    initial_leftLimb_cmd = robot.leftLimb_cmd
-    initial_rightLimb_cmd = robot.rightLimb_cmd
-    while not rospy.is_shutdown() and time_elapsed < duration:
-        # move leftLimb
-        robot.step_leftLimb_cmd = [initial_leftLimb_cmd[i] + 
-                                   (robot.tar_leftLimb_cmd[i] - initial_leftLimb_cmd[i])
-                                   * time_elapsed / duration
-                                   for i in range(len(initial_leftLimb_cmd))]
-        msg = JointCommand()
-        msg.mode = 5
-        msg.command = robot.step_leftLimb_cmd
-        robot.leftLimbPublisher.publish(msg)
-        # Move rightLimb
-        robot.step_rightLimb_cmd = [initial_rightLimb_cmd[i] + 
-                                    (robot.tar_rightLimb_cmd[i] - initial_rightLimb_cmd[i])
-                                    * time_elapsed / duration
-                                    for i in range(len(initial_rightLimb_cmd))]
-        msg = JointCommand()
-        msg.mode = 5
-        msg.command = robot.step_rightLimb_cmd
-        robot.rightLimbPublisher.publish(msg)
-        rate.sleep()
-        time_elapsed += 0.001
+    # time_elapsed = 0
+    # duration = 0.5
+    # rate = rospy.Rate(1000)
+    # initial_leftLimb_cmd = robot.leftLimb_cmd
+    # initial_rightLimb_cmd = robot.rightLimb_cmd
+    # while not rospy.is_shutdown() and time_elapsed < duration:
+    #     # move leftLimb
+    #     robot.step_leftLimb_cmd = [initial_leftLimb_cmd[i] + 
+    #                                (robot.tar_leftLimb_cmd[i] - initial_leftLimb_cmd[i])
+    #                                * time_elapsed / duration
+    #                                for i in range(len(initial_leftLimb_cmd))]
+    #     msg = JointCommand()
+    #     msg.mode = 5
+    #     msg.command = robot.step_leftLimb_cmd
+    #     robot.leftLimbPublisher.publish(msg)
+    #     # Move rightLimb
+    #     robot.step_rightLimb_cmd = [initial_rightLimb_cmd[i] + 
+    #                                 (robot.tar_rightLimb_cmd[i] - initial_rightLimb_cmd[i])
+    #                                 * time_elapsed / duration
+    #                                 for i in range(len(initial_rightLimb_cmd))]
+    #     msg = JointCommand()
+    #     msg.mode = 5
+    #     msg.command = robot.step_rightLimb_cmd
+    #     robot.rightLimbPublisher.publish(msg)
+    #     rate.sleep()
+    #     time_elapsed += 0.001
     
     # Action 4 close hand
     robot.tar_leftHand_cmd = [1.5] * 10
@@ -402,19 +396,20 @@ def main():
     # Action 5 start walking
     robot.legmotion_start()
     time_elapsed = 0
-    duration = 12
+    duration = 10
     rate = rospy.Rate(1000)
     initial_leftHand_cmd = robot.leftHand_cmd
     initial_rightHand_cmd = robot.rightHand_cmd
     
+    robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+    robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     mu = 5e-6
     
     while not rospy.is_shutdown() and time_elapsed < duration:
         legmotion_msg = Twist()
-        legmotion_msg.linear.x = 0.1
+        legmotion_msg.linear.x = 0.2
         robot.legmotion_publisher.publish(legmotion_msg)
         
-        # print(robot.lwrist_sensor)
         lfx = robot.lwrist_sensor.force.x
         lfy = robot.lwrist_sensor.force.y
         lfz = robot.rwrist_sensor.force.z
