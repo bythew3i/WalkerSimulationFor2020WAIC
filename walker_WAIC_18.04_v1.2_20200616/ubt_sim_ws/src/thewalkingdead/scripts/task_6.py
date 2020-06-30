@@ -1,27 +1,200 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 import rospy
-from  webots_api.srv import SceneSelection, SceneSelectionRequest
+from webots_api.srv import SceneSelection, SceneSelectionRequest
 from walker_srvs.srv import leg_motion_MetaFuncCtrl, leg_motion_MetaFuncCtrlRequest
+from std_msgs.msg import Int64
 from geometry_msgs.msg import Twist, WrenchStamped
 from ubt_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
 import time
-from math import pi,sin,cos
-# import math
-import numpy as np
 
+class Robot():
+    def __init__(self):
+        self.leftLimb_cmd = None
+        self.rightLimb_cmd = None
+        self.leftLimb_pos = None
+        self.rightLimb_pos = None
+        self.leftHand_cmd = None
+        self.rightHand_cmd = None
+        self.tar_leftLimb_cmd = None
+        self.tar_rightLimb_cmd = None
+        self.tar_leftHand_cmd = None
+        self.tar_rightHand_cmd = None
+        self.tar_leftLimb_pos = None
+        self.tar_rightLimb_pos = None
+        self.step_leftLimb_cmd = None
+        self.step_rightLimb_cmd = None
+        self.step_leftHand_cmd = None
+        self.step_rightHand_cmd = None
+        self.lwrist_sensor = None
+        self.rwrist_sensor = None
+        self.leg_step_num = None
 
-# def callback(msg):
-#     print(msg.position)
-#     # msg.
+                 
+        # Establish services
+        rospy.wait_for_service('inverse_kinematic_solver', timeout=10)
+        self.ik_service = rospy.ServiceProxy(
+            "inverse_kinematic_solver",
+            Solver
+        )
+        rospy.wait_for_service('forward_kinematic_solver', timeout=10)
+        self.fk_service = rospy.ServiceProxy(
+            "forward_kinematic_solver",
+            Solver
+        )
+        rospy.wait_for_service("/Leg/TaskScheduler", timeout=10)
+        self.legmotion_service = rospy.ServiceProxy(
+            "/Leg/TaskScheduler",
+            leg_motion_MetaFuncCtrl
+            )
+        
+        
+        # Subscribe topics
+        rospy.Subscriber(
+            "/walker/leftLimb/joint_states",
+            JointState,
+            self.leftLimbSubscriber
+            )
+        rospy.Subscriber(
+            "/walker/rightLimb/joint_states",
+            JointState,
+            self.rightLimbSubscriber
+            )
+        rospy.Subscriber(
+            "/walker/leftHand/joint_states",
+            JointState,
+            self.leftHandSubscriber
+        )
+        rospy.Subscriber(
+            "/walker/rightHand/joint_states",
+            JointState,
+            self.rightHandSubscriber
+        )
+        rospy.Subscriber(
+            "/sensor/ft/lwrist",
+            WrenchStamped,
+            self.lwristSensorSubscriber
+        )
+        rospy.Subscriber(
+            "/sensor/ft/rwrist",
+            WrenchStamped,
+            self.rwristSensorSubscriber
+        )
+        rospy.Subscriber(
+            "/Leg/StepNum",
+            Int64,
+            self.legStepNumSubscriber
+        )
+        
+        # Initialize publishers
+        self.leftLimbPublisher = rospy.Publisher(
+            '/walker/leftLimb/controller',
+            JointCommand,
+            queue_size=10
+            )
+        self.rightLimbPublisher = rospy.Publisher(
+            '/walker/rightLimb/controller',
+            JointCommand, queue_size=10
+            )
+        self.leftHandPublisher = rospy.Publisher(
+            '/walker/leftHand/controller',
+            JointCommand, queue_size=10
+        )
+        self.rightHandPublisher = rospy.Publisher(
+            '/walker/rightHand/controller',
+            JointCommand, queue_size=10
+        )
+        self.legmotion_publisher = rospy.Publisher(
+            '/nav/cmd_vel_nav',
+            Twist,
+            queue_size=10
+            )
 
-def load_scene():
-    """Load the scene for this task
-    """
+        
+        # self.leg
+    
+    # Start legmotion
+    def legmotion_start(self):
+        if self.legmotion_service != None:
+            try:
+                req = leg_motion_MetaFuncCtrlRequest()
+                req.func_name = "dynamic"
+                req.param_json = ""
+                req.cmd = "start"
+                # response
+                res = self.legmotion_service(req)
+                if res.success:
+                    return
+            except Exception as e:
+                print(e)
+        # raise Exception("Failed: legmotion_start")
+
+    # Stop legmotion
+    def legmotion_stop(self):
+        if self.legmotion_service != None:
+            req = leg_motion_MetaFuncCtrlRequest()
+            req.func_name = "dynamic"
+            req.param_json = ""
+            req.cmd = "stop"
+            # response
+            res = self.legmotion_service(req)
+            print(res)
+            if res.success:
+                return
+        raise Exception("Failed: legmotion_stop")
+    
+    
+    # Subscriber callbacks
+    def leftLimbSubscriber(self, msg):
+        self.leftLimb_cmd = msg.position
+        
+    def rightLimbSubscriber(self, msg):
+        self.rightLimb_cmd = msg.position
+    
+    def leftHandSubscriber(self,msg):
+        self.leftHand_cmd = msg.position
+    
+    def rightHandSubscriber(self, msg):
+        self.rightHand_cmd = msg.position
+    
+    def lwristSensorSubscriber(self, msg):
+        self.lwrist_sensor = msg.wrench
+    
+    def rwristSensorSubscriber(self, msg):
+        self.rwrist_sensor = msg.wrench
+    
+    def legStepNumSubscriber(self,msg):
+        self.leg_step_num = msg.data
+    
+    # @staticmethod  
+    def __cmd2pos__(self, cmd, left_right):
+        if self.fk_service==None:
+            raise Exception("Failed: fk_service")
+        resp = self.fk_service(
+            LeftRight = left_right,
+            limbTwist = cmd,
+            targetPos=[0, 0, 0], 
+            targetOri=[0, 0, 0, 1]
+        )
+        return list(resp.limbPose)
+    
+    # @staticmethod
+    def __pos2cmd__(self, pos, cmd, left_right):
+        if self.ik_service==None:
+            raise Exception("Failed: ik_service")
+        resp = self.ik_service(
+            LeftRight = left_right,
+            limbTwist = cmd,
+            targetPos=pos[:3], 
+            targetOri=pos[3:7]
+        )
+        return list(resp.limbTwist)
+    
+def main():
+    # Load scene
     rospy.wait_for_service("/walker/sence")
-
     try:
         scheduler = rospy.ServiceProxy("/walker/sence", SceneSelection)
         request = SceneSelectionRequest()
@@ -32,336 +205,257 @@ def load_scene():
         print(response)
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
-
-
-def startWalk():
-    try:
-        rospy.wait_for_service("/Leg/TaskScheduler", timeout=10)
-        scheduler = rospy.ServiceProxy("/Leg/TaskScheduler", leg_motion_MetaFuncCtrl)
-        request = leg_motion_MetaFuncCtrlRequest()
-        request.func_name = "dynamic"
-        request.param_json = ''
-        request.cmd = "start"
-        response = scheduler(request)
-        print(response)
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-    
-        # control leg_motion by publishing msg
-    pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
-    
-
-def stopWalk():
-    try:
-        rospy.wait_for_service("/Leg/TaskScheduler", timeout=10)
-        scheduler = rospy.ServiceProxy("/Leg/TaskScheduler", leg_motion_MetaFuncCtrl)
-        request = leg_motion_MetaFuncCtrlRequest()
-        request.func_name = "dynamic"
-        request.param_json = ''
-        request.cmd = "stop"
-        response = scheduler(request)
-        print(response)
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-    
-        # control leg_motion by publishing msg
-    pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
-
-# class subscriber():
-#     def __init__(self):
-#         self.sub = None
-#         self.msg = None
-
-
-def move(node, tar_cmd=[0]*7, duration=0.1):
-    pub = rospy.Publisher('/walker/'+node+'/controller', JointCommand, queue_size=10)
-
-    time = 0
-    cur_cmd = rospy.wait_for_message("/walker/"+node+"/joint_states", JointState).position
-
-    move_per_step = [(tar - cur) / duration * 0.001 for cur, tar in zip(cur_cmd, tar_cmd)]
-    rate = rospy.Rate(1000)
-    while time < duration*1000:
-        time += 1
-        cur_cmd = [cur+step for cur, step in zip(cur_cmd, move_per_step)]
-        msg = JointCommand()
-        msg.mode = 5
-        msg.command = cur_cmd
-        pub.publish(msg)
-        rate.sleep()
-    pass
-
-# def move(node, tar_cmd=[0]*7, duration=0.1):
-#     pub = rospy.Publisher('/walker/'+node+'/controller', JointCommand, queue_size=10)
-
-#     time = 0
-#     cur_cmd = rospy.wait_for_message("/walker/"+node+"/joint_states", JointState).position
-
-#     move_per_step = [(tar - cur) / duration * 0.001 for cur, tar in zip(cur_cmd, tar_cmd)]
-#     rate = rospy.Rate(1000)
-#     while time < duration*1000:
-#         time += 1
-#         cur_cmd = [cur+step for cur, step in zip(cur_cmd, move_per_step)]
-#         msg = JointCommand()
-#         msg.mode = 5
-#         msg.command = cur_cmd
-#         pub.publish(msg)
-#         rate.sleep()
-#     pass
-
-
-class Robot():
-    def __init__(self):
-        self.leftLimb_cmd = None
-        self.rightLimb_cmd = None
-        rospy.Subscriber("/walker/leftLimb/joint_states", JointState, self.leftLimb_subscriber)
-        rospy.Subscriber("/walker/rightLimb/joint_states", JointState, self.rightLimb_subscriber)
-        # rospy.Subscriber("/walker/leftLimb/joint_states", JointState, self.leftLimb_subscriber)
-        # rospy.Subscriber("/walker/rightLimb/joint_states", JointState, self.rightLimb_subscriber)
-
-        rospy.Subscriber("/sensor/ft/lwrist", WrenchStamped, self.lwrist_subscriber)
-
-        rospy.Subscriber("/sensor/ft/rwrist", WrenchStamped, self.rwrist_subscriber)
-
-
-        # rospy.wait_for_service('/Leg/TaskScheduler', timeout=10)
-        # self.legmotion_service = rospy.ServiceProxy(
-        #     "/Leg/TaskScheduler", 
-        #     walker_srvs.srv.leg_motion_MetaFuncCtrl
-        # )
-
-        rospy.wait_for_service('inverse_kinematic_solver', timeout=10)
-        self.ik_service = rospy.ServiceProxy(
-            "inverse_kinematic_solver",
-            Solver
-        )
-
-        rospy.wait_for_service('forward_kinematic_solver', timeout=10)
-        self.fk_service = rospy.ServiceProxy(
-            "forward_kinematic_solver",
-            Solver
-        )
-    
-    def lwrist_subscriber(self, msg):
-        self.lwrench = msg.wrench
-        pass
-
-    def rwrist_subscriber(self, msg):
-        self.rwrench = msg.wrench
-        pass
-
-
-    def __cmd2pos__(self, cmd, left_right):
-        if self.fk_service==None:
-            raise Exception("Failed: fk_service")
         
-        resp = self.fk_service(
-            LeftRight = left_right,
-            limbTwist = cmd,
-            targetPos=[0, 0, 0], 
-            targetOri=[0, 0, 0, 1]
-        )
-        return resp.limbPose
-
-
-    def __pos2cmd__(self, pos, left_right, **kwargs):
-
-        if "cur_cmd" in kwargs:
-            cur_cmd = kwargs["cur_cmd"]
-        else:
-            if left_right == "left":
-                cur_cmd = self.leftLimb_cmd
-            else:
-                cur_cmd = self.rightLimb_cmd
-
-
-        if self.ik_service==None:
-            raise Exception("Failed: ik_service")
-        
-        resp = self.ik_service(
-            LeftRight = left_right,
-            limbTwist = cur_cmd,
-            targetPos=pos[:3], 
-            targetOri=pos[3:7]
-        )
-        return resp.limbTwist
-
-    def leftLimb_subscriber(self, msg):
-        self.leftLimb_cmd = msg.position
-        
-
-    def rightLimb_subscriber(self, msg):
-        self.rightLimb_cmd = msg.position
-
-
-    def get_leftLimb_coordinate(self):
-        return self.__cmd2pos__(self.leftLimb_cmd, "left")
-    
-    def get_rightLimb_coordinate(self):
-        return self.__cmd2pos__(self.rightLimb_cmd, "right")
-
-def stage1(robot):
-    stopWalk()
-
-    LShoulderPitch=-.15
-    LShoulderRoll=-1.
-    LShoulderYaw=-2.
-    LElbowRoll=-2.0
-    LElbowYaw=2.447
-    LWristRoll=-.6
-    LWristPitch=-.3
-
-    tar_cmd = [LShoulderPitch,LShoulderRoll,LShoulderYaw,LElbowRoll,LElbowYaw,LWristRoll,LWristPitch]
-    # tar_cmd = [-cmd for cmd in tar_cmd]
-    move(node='leftLimb', tar_cmd=tar_cmd, duration=.5)
-
-    LShoulderPitch=-.15
-    LShoulderRoll=0
-    LShoulderYaw=-1.
-    LElbowRoll=-2.1
-    LElbowYaw=2.447
-    LWristRoll=-.6
-    LWristPitch=-.3
-
-    tar_cmd = [LShoulderPitch,LShoulderRoll,LShoulderYaw,LElbowRoll,LElbowYaw,LWristRoll,LWristPitch]
-    # tar_cmd = [-cmd for cmd in tar_cmd]
-    move(node='leftLimb', tar_cmd=tar_cmd, duration=.5)
-
-    cur_pos = robot.__cmd2pos__(robot.leftLimb_cmd, left_right="left")
-    cur_cmd = robot.__pos2cmd__(cur_pos, left_right="left")
-
-    tar_pos = list(cur_pos)
-    tar_pos[0] += .11
-    tar_pos[1] += .023
-    tar_pos[2] += -.05
-    # robot.left_tar_pos = tar_pos
-    # print("tar_pos", tar_pos)
-    tar_cmd = robot.__pos2cmd__(tar_pos, left_right="left")
-    print("tar_cmd", tar_cmd)
-    tar_cmd = list(tar_cmd)
-    tar_cmd[4] = 2.447
-    tar_cmd[5] = -.3
-    tar_cmd[6] = -.3
-    move(node='leftLimb', tar_cmd=tar_cmd, duration=.5)
-    robot.left_tar_pos = list(robot.__cmd2pos__(tar_cmd,"left"))
-    # close left hand
-    move(node="leftHand", tar_cmd=[1.5]*10)
-
-
-    RShoulderPitch=.15
-    RShoulderRoll=-1.
-    RShoulderYaw=2.
-    RElbowRoll=-2.0
-    RElbowYaw=-2.447
-    RWristRoll=.6
-    RWristPitch=-.3
-    tar_cmd = [RShoulderPitch,RShoulderRoll,RShoulderYaw,RElbowRoll,RElbowYaw,RWristRoll,RWristPitch]
-    move(node='rightLimb', tar_cmd=tar_cmd, duration=.5)
-
-    RShoulderPitch=.15
-    RShoulderRoll=0
-    RShoulderYaw=1.
-    RElbowRoll=-2.1
-    RElbowYaw=-2.447
-    RWristRoll=.6
-    RWristPitch=-.3
-    tar_cmd = [RShoulderPitch,RShoulderRoll,RShoulderYaw,RElbowRoll,RElbowYaw,RWristRoll,RWristPitch]
-    move(node='rightLimb', tar_cmd=tar_cmd, duration=.5)
-
-    cur_pos = robot.__cmd2pos__(robot.rightLimb_cmd,left_right="right")
-    cur_cmd = robot.__pos2cmd__(cur_pos,left_right="right")
-    tar_pos = list(cur_pos)
-    tar_pos[0] += .11
-    tar_pos[1] += .01
-    tar_pos[2] += -.05
-    tar_cmd = robot.__pos2cmd__(tar_pos,left_right="right")
-    tar_cmd = list(tar_cmd)
-    tar_cmd[4] = -2.447
-    tar_cmd[5] = .3
-    tar_cmd[6] = -.3
-    move(node='rightLimb', tar_cmd=tar_cmd, duration=.5)
-    robot.right_tar_pos = list(robot.__cmd2pos__(tar_cmd,"right"))
-    # # close right hand
-    move(node="rightHand", tar_cmd=[1.5]*10)
-
-
-
-
-def stage2(robot):
-
-    print("start walking")
-    startWalk()
-    
-    pub = rospy.Publisher('/nav/cmd_vel_nav', Twist, queue_size=10)
-    left_limb_pub = rospy.Publisher('/walker/'+"left"+'/controller', JointCommand, queue_size=10)
-    right_limb_pub = rospy.Publisher('/walker/'+"right"+'/controller', JointCommand, queue_size=10)
-    rate = rospy.Rate(1000) # 10HZ
-    while not rospy.is_shutdown():
-        twist_msg = Twist()
-        twist_msg.linear.x = 0.05
-        
-        pub.publish(twist_msg)
-        # # close left hand
-        # move(node="leftHand", tar_cmd=[1.5]*10, duration=0.002)
-        # # close left hand
-        # move(node="rightHand", tar_cmd=[1.5]*10, duration=0.002)
-        
-        # tar_pos[1] += robot.waistMeasured[1] #FIX
-
-        mu = 1e-5 # OKay
-        tar_pos = robot.left_tar_pos
-        # mu = 5e-5
-        cur_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left") # FIX
-        tar_pos[0] = cur_pos[0]-robot.lwrench.force.x * mu if robot.lwrench.force.x < 5 else cur_pos[0] #FIX
-        tar_pos[1] = cur_pos[1]-robot.lwrench.force.y * mu # FIX
-        tar_pos[2] = cur_pos[2]-robot.lwrench.force.z * mu # FIX
-        rospy.loginfo(tar_pos)
-        tar_cmd = robot.__pos2cmd__(tar_pos, left_right="left")
-        # print("tar_cmd", tar_cmd)
-        tar_cmd = list(tar_cmd)
-        tar_cmd[4] = 2.447
-        tar_cmd[5] = -.3
-        tar_cmd[6] = -.3
-        # move(node='leftLimb', tar_cmd=tar_cmd, duration=.001)
-        msg = JointCommand()
-        msg.mode = 5
-        msg.command = tar_cmd
-        left_limb_pub.publish(msg)
-        
-
-        tar_pos = robot.right_tar_pos
-        cur_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-        tar_pos[0] = cur_pos[0]-robot.rwrench.force.x * mu if robot.rwrench.force.x < 5 else cur_pos[0] #FIX
-        tar_pos[1] = cur_pos[1]-robot.rwrench.force.y * mu
-        tar_pos[2] = cur_pos[2]-robot.rwrench.force.z * mu
-
-        tar_cmd = robot.__pos2cmd__(tar_pos,left_right="right")
-        tar_cmd = list(tar_cmd)
-        tar_cmd[4] = -2.447
-        tar_cmd[5] = .3
-        tar_cmd[6] = -.3
-        # move(node='rightLimb', tar_cmd=tar_cmd, duration=.001)
-        msg = JointCommand()
-        msg.mode = 5
-        msg.command = tar_cmd
-        right_limb_pub.publish(msg)
-        
-        rate.sleep()
-    pass
-
-def main():
     rospy.init_node("task_6")
-    load_scene()
-    
     robot = Robot()
+    # wait for subscriber to get msgs
+    while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
+        pass
+    
+    # Action 1 cmds
+    LShoulderPitch=1.78
+    LShoulderRoll=-1.4
+    LShoulderYaw=0.4
+    LElbowRoll=-1.39
+    LElbowYaw=0.488
+    LWristRoll=0.2 
+    LWristPitch=-0.3
+    robot.tar_leftLimb_cmd = [LShoulderPitch,
+                            LShoulderRoll,
+                            LShoulderYaw,
+                            LElbowRoll,
+                            LElbowYaw,
+                            LWristRoll,
+                            LWristPitch]
+    RShoulderPitch=-1.78
+    RShoulderRoll=-1.4
+    RShoulderYaw=-0.4
+    RElbowRoll=-1.39
+    RElbowYaw=-0.448
+    RWristRoll=-0.2
+    RWristPitch=-0.3
+    robot.tar_rightLimb_cmd = [RShoulderPitch,
+                               RShoulderRoll,
+                               RShoulderYaw,
+                               RElbowRoll,
+                               RElbowYaw,
+                               RWristRoll,
+                               RWristPitch]
+    time_elapsed = 0
+    duration = 1
+    rate = rospy.Rate(1000)
+    initial_leftLimb_cmd = robot.leftLimb_cmd
+    initial_rightLimb_cmd = robot.rightLimb_cmd
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        # move leftLimb
+        robot.step_leftLimb_cmd = [initial_leftLimb_cmd[i] + 
+                                   (robot.tar_leftLimb_cmd[i] - initial_leftLimb_cmd[i])
+                                   * time_elapsed / duration
+                                   for i in range(len(initial_leftLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_leftLimb_cmd
+        robot.leftLimbPublisher.publish(msg)
+        # Move rightLimb
+        robot.step_rightLimb_cmd = [initial_rightLimb_cmd[i] + 
+                                    (robot.tar_rightLimb_cmd[i] - initial_rightLimb_cmd[i])
+                                    * time_elapsed / duration
+                                    for i in range(len(initial_rightLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_rightLimb_cmd
+        robot.rightLimbPublisher.publish(msg)
+        rate.sleep()
+        time_elapsed += 0.001
+    
+    
+    # Action 2 cmds
+    LShoulderPitch=1.295
+    LShoulderRoll=-0.55
+    LShoulderYaw=0.4
+    LElbowRoll=-1.39
+    LElbowYaw=0.488
+    LWristRoll=0.2 
+    LWristPitch=-0.3
+    robot.tar_leftLimb_cmd = [LShoulderPitch,
+                            LShoulderRoll,
+                            LShoulderYaw,
+                            LElbowRoll,
+                            LElbowYaw,
+                            LWristRoll,
+                            LWristPitch]
+    RShoulderPitch=-1.295
+    RShoulderRoll=-0.55
+    RShoulderYaw=-0.4
+    RElbowRoll=-1.39
+    RElbowYaw=-0.448
+    RWristRoll=-0.2
+    RWristPitch=-0.3
+    robot.tar_rightLimb_cmd = [RShoulderPitch,
+                               RShoulderRoll,
+                               RShoulderYaw,
+                               RElbowRoll,
+                               RElbowYaw,
+                               RWristRoll,
+                               RWristPitch]
+    time_elapsed = 0
+    duration = 0.5
+    rate = rospy.Rate(1000)
+    initial_leftLimb_cmd = robot.leftLimb_cmd
+    initial_rightLimb_cmd = robot.rightLimb_cmd
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        # move leftLimb
+        robot.step_leftLimb_cmd = [initial_leftLimb_cmd[i] + 
+                                   (robot.tar_leftLimb_cmd[i] - initial_leftLimb_cmd[i])
+                                   * time_elapsed / duration
+                                   for i in range(len(initial_leftLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_leftLimb_cmd
+        robot.leftLimbPublisher.publish(msg)
+        # Move rightLimb
+        robot.step_rightLimb_cmd = [initial_rightLimb_cmd[i] + 
+                                    (robot.tar_rightLimb_cmd[i] - initial_rightLimb_cmd[i])
+                                    * time_elapsed / duration
+                                    for i in range(len(initial_rightLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_rightLimb_cmd
+        robot.rightLimbPublisher.publish(msg)
+        rate.sleep()
+        time_elapsed += 0.001
+    
+    # Action 3 move limb straight forward
+    # robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+    # robot.tar_leftLimb_pos[0] += 0.11
+    # robot.tar_leftLimb_pos[1] += 0.023 #0.023
+    # robot.tar_leftLimb_pos[2] += -0.055 #-0.05
+    # robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+    # robot.tar_leftLimb_cmd[4] = 2.447
+    # robot.tar_leftLimb_cmd[5] = -0.3
+    # robot.tar_leftLimb_cmd[6] = -0.3
+    
+    # robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+    # robot.tar_rightLimb_pos[0] += 0.11
+    # robot.tar_rightLimb_pos[1] -= 0.023
+    # robot.tar_rightLimb_pos[2] += -0.055
+    # robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+    # robot.tar_rightLimb_cmd[4] = -2.447
+    # robot.tar_rightLimb_cmd[5] = 0.3
+    # robot.tar_rightLimb_cmd[6] = -0.3
+    
+    # time_elapsed = 0
+    # duration = 0.5
+    # rate = rospy.Rate(1000)
+    # initial_leftLimb_cmd = robot.leftLimb_cmd
+    # initial_rightLimb_cmd = robot.rightLimb_cmd
+    # while not rospy.is_shutdown() and time_elapsed < duration:
+    #     # move leftLimb
+    #     robot.step_leftLimb_cmd = [initial_leftLimb_cmd[i] + 
+    #                                (robot.tar_leftLimb_cmd[i] - initial_leftLimb_cmd[i])
+    #                                * time_elapsed / duration
+    #                                for i in range(len(initial_leftLimb_cmd))]
+    #     msg = JointCommand()
+    #     msg.mode = 5
+    #     msg.command = robot.step_leftLimb_cmd
+    #     robot.leftLimbPublisher.publish(msg)
+    #     # Move rightLimb
+    #     robot.step_rightLimb_cmd = [initial_rightLimb_cmd[i] + 
+    #                                 (robot.tar_rightLimb_cmd[i] - initial_rightLimb_cmd[i])
+    #                                 * time_elapsed / duration
+    #                                 for i in range(len(initial_rightLimb_cmd))]
+    #     msg = JointCommand()
+    #     msg.mode = 5
+    #     msg.command = robot.step_rightLimb_cmd
+    #     robot.rightLimbPublisher.publish(msg)
+    #     rate.sleep()
+    #     time_elapsed += 0.001
+    
+    # Action 4 close hand
+    robot.tar_leftHand_cmd = [1.5] * 10
+    robot.tar_rightHand_cmd = [1.5] * 10
+    
+    time_elapsed = 0
+    duration = 0.5
+    rate = rospy.Rate(1000)
+    initial_leftHand_cmd = robot.leftHand_cmd
+    initial_rightHand_cmd = robot.rightHand_cmd
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        # move leftLimb
+        robot.step_leftHand_cmd = [initial_leftHand_cmd[i] + 
+                                   (robot.tar_leftHand_cmd[i] - initial_leftHand_cmd[i])
+                                   * time_elapsed / duration
+                                   for i in range(len(initial_leftHand_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_leftHand_cmd
+        robot.leftHandPublisher.publish(msg)
+        # Move rightLimb
+        robot.step_rightHand_cmd = [initial_rightHand_cmd[i] + 
+                                    (robot.tar_rightHand_cmd[i] - initial_rightHand_cmd[i])
+                                    * time_elapsed / duration
+                                    for i in range(len(initial_rightHand_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_rightHand_cmd
+        robot.rightHandPublisher.publish(msg)
+        rate.sleep()
+        time_elapsed += 0.001
 
-    # Grab the handle
-    stage1(robot)
+
+    # Action 5 start walking
+    robot.legmotion_start()
+    time_elapsed = 0
+    duration = 10
+    rate = rospy.Rate(1000)
+    initial_leftHand_cmd = robot.leftHand_cmd
+    initial_rightHand_cmd = robot.rightHand_cmd
     
-    # walk
-    # exit()
-    stage2(robot)
+    robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+    robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+    mu = 5e-6
+    step_num = 11
     
-    rospy.spin()
+    while not rospy.is_shutdown() and robot.leg_step_num < step_num:
+        legmotion_msg = Twist()
+        legmotion_msg.linear.x = 0.2
+        robot.legmotion_publisher.publish(legmotion_msg)
+        
+        lfx = robot.lwrist_sensor.force.x
+        lfy = robot.lwrist_sensor.force.y
+        lfz = robot.rwrist_sensor.force.z
+        robot.leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+        robot.tar_leftLimb_pos[0] = robot.leftLimb_pos[0] - lfx*mu if lfx < 0 else robot.leftLimb_pos[0]
+        robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - lfy*mu
+        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - lfz*mu
+        robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_leftLimb_cmd
+        robot.leftLimbPublisher.publish(msg)
+        
+        rfx = robot.rwrist_sensor.force.x
+        rfy = robot.rwrist_sensor.force.y
+        rfz = robot.rwrist_sensor.force.z
+        robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+        robot.tar_rightLimb_pos[0] = robot.rightLimb_pos[0] - rfx*mu if rfx < 0 else robot.rightLimb_pos[0]
+        robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - rfy*mu
+        robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - rfz*mu
+        robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_rightLimb_cmd
+        robot.rightLimbPublisher.publish(msg)
+        
+        rate.sleep()
+        time_elapsed += 0.001
+    
+    robot.legmotion_stop()
+
+    # Shutdown callback
+    rospy.on_shutdown(robot.legmotion_stop)
+    
+    
+
 if __name__ == "__main__":
     main()
