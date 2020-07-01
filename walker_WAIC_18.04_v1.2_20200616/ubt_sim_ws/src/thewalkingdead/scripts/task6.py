@@ -267,7 +267,7 @@ def main():
         robot.rightLimbPublisher.publish(msg)
         rate.sleep()
         time_elapsed += 0.001
-    
+    rospy.sleep(0.2)
     
     # Action 2 cmds
     LShoulderPitch=1.295
@@ -411,10 +411,13 @@ def main():
     initial_leftHand_cmd = robot.leftHand_cmd
     initial_rightHand_cmd = robot.rightHand_cmd
     
+    initial_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+    initial_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-    mu = 5e-6
-    step_num = 11
+    mu = 3e-6
+    beta = 0.02
+    step_num = 13
     
     while not rospy.is_shutdown() and robot.leg_step_num < step_num:
         legmotion_msg = Twist()
@@ -426,8 +429,11 @@ def main():
         lfz = robot.rwrist_sensor.force.z
         robot.leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
         robot.tar_leftLimb_pos[0] = robot.leftLimb_pos[0] - lfx*mu if lfx < 0 else robot.leftLimb_pos[0]
+        robot.tar_leftLimb_pos[0] += (initial_leftLimb_pos[0] - robot.tar_leftLimb_pos[0]) * beta
         robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - lfy*mu
+        robot.tar_leftLimb_pos[1] += (initial_leftLimb_pos[1] - robot.tar_leftLimb_pos[1]) * beta
         robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - lfz*mu
+        robot.tar_leftLimb_pos[2] += (initial_leftLimb_pos[2] - robot.tar_leftLimb_pos[2]) * beta
         robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
         msg = JointCommand()
         msg.mode = 5
@@ -439,8 +445,11 @@ def main():
         rfz = robot.rwrist_sensor.force.z
         robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
         robot.tar_rightLimb_pos[0] = robot.rightLimb_pos[0] - rfx*mu if rfx < 0 else robot.rightLimb_pos[0]
+        robot.tar_rightLimb_pos[0] += (initial_rightLimb_pos[0] - robot.tar_rightLimb_pos[0]) * beta
         robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - rfy*mu
+        robot.tar_rightLimb_pos[1] += (initial_rightLimb_pos[1] - robot.tar_rightLimb_pos[1]) * beta
         robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - rfz*mu
+        robot.tar_rightLimb_pos[2] += (initial_rightLimb_pos[2] - robot.tar_rightLimb_pos[2]) * beta
         robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
         msg = JointCommand()
         msg.mode = 5
