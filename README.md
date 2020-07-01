@@ -60,7 +60,7 @@ git fetch upstream master
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: true}"
     ```
-- [ ] 任务11：开冰箱 
+- [x] ~~任务11：开冰箱~~
     ```
     rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: true}"
     ```
