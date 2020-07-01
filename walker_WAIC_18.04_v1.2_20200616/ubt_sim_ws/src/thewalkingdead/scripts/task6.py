@@ -206,7 +206,7 @@ def main():
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
         
-    rospy.init_node("task_6")
+    rospy.init_node("task6")
     robot = Robot()
     # wait for subscriber to get msgs
     while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
