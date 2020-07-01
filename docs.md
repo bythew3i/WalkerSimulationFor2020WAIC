@@ -76,7 +76,9 @@ roslaunch thewalkingdead task2.launch
 > TODO
 
 ## Run Task 6
-> TODO
+```bash
+roslaunch thewalkingdead task6.launch
+```
 
 ## Run Task 7
 > TODO
@@ -96,8 +98,13 @@ roslaunch thewalkingdead task2.launch
 roslaunch thewalkingdead task10.launch
 ```
 
+优化：
+- 最后几步可以增加 阻尼系数，从而快速拉开完成比赛，缩小用时
+
 ## Run Task 11
-> TODO
+```bash
+roslaunch thewalkingdead task11.launch
+```
 
 ## Run Task 12
 > TODO
@@ -109,13 +116,18 @@ roslaunch thewalkingdead task10.launch
 ```bash
 roslaunch thewalkingdead task14.launch
 ```
+优化:
+- 可以试着增加阻抗提高重心稳定度，然后可以增大脚步，以减少比赛用时
+
+Python Dependancy:
+- from scipy.interpolate import KroghInterpolator
 
 ## Run Task 15
 ```bash
 roslaunch thewalkingdead task15.launch
 ```
 
-notes:
+Notes:
 - 6秒左右完成任务
 - 没有做优化， 具有不稳定性，有一定可能会摔倒
 - 采用倒立摆模型

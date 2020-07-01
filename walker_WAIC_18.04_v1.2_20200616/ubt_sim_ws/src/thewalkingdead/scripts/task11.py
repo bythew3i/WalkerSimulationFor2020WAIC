@@ -164,15 +164,11 @@ class Task11(object):
 
 
 
-        ## Select the scene
-        self.scene_service(scene_name="OpenFridge", nav=False, vision=True)
-
-
         # SOME CONSTANTS
         # TAR_DEPTH_X = 1.3445
         # TAR_DEPTH_Y = 2.9363
-        TAR_DEPTH_X = 1.365
-        TAR_DEPTH_Y = 2.925
+        TAR_DEPTH_X = 1.360
+        TAR_DEPTH_Y = 2.920
         MEASURE_Y_TIME = 1
         MEASURE_X_TIME = 1
         UNIT_Y_STEP = 0.04
@@ -187,12 +183,15 @@ class Task11(object):
 
         action = 0
         move_x = 0 # forward is postive, backward is negative
-        move_y = 0 # right is postive, left is negative
+        move_y = 0 # right is negative, left is postive
+
+        ## Select the scene
+        self.scene_service(scene_name="OpenFridge", nav=False, vision=True)
 
         while not rospy.is_shutdown():
 
             if self.leg_status.data in ["stopping", "standInit"]:
-                self._log("... Waiting to stable ...")
+                self._log("... Waiting to be stable ...")
 
             elif action == 0:
                 self._log("Action 0: Measure Y")
@@ -214,8 +213,8 @@ class Task11(object):
                 else:
                     dis = self.measure_depth()
                     move_y = int(round((TAR_DEPTH_Y-dis) / UNIT_Y_STEP * 2))
-                    print "\tCurrent depth Y", dis
-                    print "\tMove Y", move_y
+                    print "  Current depth Y", dis
+                    print "  Move Y", move_y
                     self.leg_motion_start()
                     action += 1
 
@@ -248,8 +247,8 @@ class Task11(object):
                 else:
                     dis = self.measure_depth()
                     move_x = -int(round((TAR_DEPTH_X-dis) / UNIT_X_STEP))
-                    print "\tCurrent depth X", dis
-                    print "\tMove X", move_x
+                    print "  Current depth X", dis
+                    print "  Move X", move_x
                     self.leg_motion_start()
                     action += 1
             elif action == 3:
