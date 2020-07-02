@@ -147,7 +147,7 @@ and for the robot entering dynamic mode.
 ```bash
 roslaunch thewalkingdead nav_prepare.launch
 # Wait for about 30s...
-roslaunch thewalkingdead task5.launch
+roslaunch thewalkingdead task13.launch
 ```
 
 ## Run Task 14
@@ -176,3 +176,7 @@ Notes:
 
 Python Dependancy:
 - from scipy.interpolate import KroghInterpolator
+
+Navigation notes:
+- 融合Imu参数提高Odometry精度
+- 研究曲线走法
