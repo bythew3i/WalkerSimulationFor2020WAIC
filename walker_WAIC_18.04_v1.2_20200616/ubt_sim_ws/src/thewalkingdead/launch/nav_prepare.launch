@@ -8,7 +8,7 @@
     <!-- webots -->
     <node type="start_webots.sh" name="webots" pkg="thewalkingdead" output="log"/>
     <!-- Leg motions -->
-    <include file="$(find leg_motion)/launch/walker2_leg.launch"/>
+    <include file="$(find leg_motion)/launch/walker2_leg.launch" >
         <arg name="account_file" value="$(find thewalkingdead)/config/user_account.json" />
     </include>
 

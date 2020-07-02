@@ -93,7 +93,15 @@ Notes:
 > TODO
 
 ## Run Task 5
-> TODO
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task5.launch
+```
 
 ## Run Task 6
 ```bash
@@ -109,8 +117,16 @@ Notes:
 ## Run Task 8
 > TODO
 
-## Run Task 8
-> TODO
+## Run Task 9
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task9.launch
+```
 
 ## Run Task 10
 > **Attention:**
@@ -133,7 +149,15 @@ roslaunch thewalkingdead task11.launch
 > TODO
 
 ## Run Task 13
-> TODO
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task5.launch
+```
 
 ## Run Task 14
 ```bash
