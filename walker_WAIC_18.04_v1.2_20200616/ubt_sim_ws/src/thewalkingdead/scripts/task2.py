@@ -250,11 +250,7 @@ def stage5():
 
 
 def task2():
-<<<<<<< HEAD
-    rospy.init_node('grasp_cup_motion', anonymous=True)
-=======
     rospy.init_node('task2', anonymous=True)
->>>>>>> 7bc78f056aecb3e9e14dd14ab58335dc5a812122
     
     print("Moving to task...")
     goto_task()

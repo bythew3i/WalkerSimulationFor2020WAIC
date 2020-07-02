@@ -28,20 +28,6 @@ catkin_make
 source devel/setup.bash
 ```
 
-<<<<<<< HEAD
-> TODO: 
-> Launch FIle setups
-
-
-## Run Walk Demo
-Auth to use leg_motion
-```bash
-roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
-```
-
-Run python script
-```bash
-=======
 
 
 ## Run Walk Demo
@@ -50,7 +36,6 @@ Run python script
 roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
 
 # Run python script
->>>>>>> 7bc78f056aecb3e9e14dd14ab58335dc5a812122
 rosrun thewalkingdead walk_demo.py
 ```
 
