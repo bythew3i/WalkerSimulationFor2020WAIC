@@ -82,6 +82,8 @@ Notes:
 including webots, leg_motion etc. Please give ~30s for everything to boot up,
 and for the robot entering dynamic mode.
 
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
 roslaunch thewalkingdead nav_prepare.launch
 # Wait for about 30s...
@@ -107,6 +109,8 @@ Notes:
 including webots, leg_motion etc. Please give ~30s for everything to boot up,
 and for the robot entering dynamic mode.
 
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
 roslaunch thewalkingdead nav_prepare.launch
 # Wait for about 30s...
@@ -138,6 +142,8 @@ roslaunch thewalkingdead task11.launch
 including webots, leg_motion etc. Please give ~30s for everything to boot up,
 and for the robot entering dynamic mode.
 
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
 roslaunch thewalkingdead nav_prepare.launch
 # Wait for about 30s...

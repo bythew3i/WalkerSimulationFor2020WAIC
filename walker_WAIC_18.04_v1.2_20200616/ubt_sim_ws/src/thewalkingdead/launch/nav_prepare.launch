@@ -12,7 +12,7 @@
         <arg name="account_file" value="$(find thewalkingdead)/config/user_account.json" />
     </include>
 
-    <node pkg="thewalkingdead" name="framed_imu_message_publisher" type="framed_imu_message_publisher" output="screen" />
+    <!-- <node pkg="thewalkingdead" name="framed_imu_message_publisher" type="framed_imu_message_publisher" output="screen" /> -->
 
     <node pkg="thewalkingdead" name="odom_publisher" type="odom_publisher" />
 
@@ -21,7 +21,7 @@
      <!-- orb slam 2 -->
     <include file="$(find orb_slam2_ros)/ros/launch/orb_slam2_walker_stereo.launch" />
 
-    <node pkg="thewalkingdead" name="navigation_prepare" type="navigation_prepare.py" output="screen"/>
+    <!-- <node pkg="thewalkingdead" name="navigation_prepare" type="navigation_prepare.py" output="screen"/> -->
 
     <!-- GUIs -->
     <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" output="log"/>
