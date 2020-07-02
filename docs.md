@@ -28,6 +28,7 @@ catkin_make
 source devel/setup.bash
 ```
 
+<<<<<<< HEAD
 > TODO: 
 > Launch FIle setups
 
@@ -40,6 +41,16 @@ roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
 
 Run python script
 ```bash
+=======
+
+
+## Run Walk Demo
+```bash
+# Auth to use leg_motion
+roslaunch leg_motion walker2_leg.launch account_file:={ Path }/user_account.json
+
+# Run python script
+>>>>>>> 7bc78f056aecb3e9e14dd14ab58335dc5a812122
 rosrun thewalkingdead walk_demo.py
 ```
 
@@ -61,13 +72,22 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 ```
 
 ## Run Task 1
-> `roslaunch thewalkdingdead task1.launch`
+```bash
+roslaunch thewalkingdead task1.launch
+```
 
 ## Run Task 2
-> `roslaunch thewalkdingdead task2.launch`
+```bash
+roslaunch thewalkingdead task2.launch
+```
 
 ## Run Task 3
-> TODO
+```bash
+roslaunch thewalkingdead task3.launch
+```
+Notes:
+- 增加了位移偏差末端补偿系数，提高了抓取 4/5 的准确率
+- 有待于做更多测试，有小可能会失败
 
 ## Run Task 4
 > TODO
@@ -76,7 +96,12 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 > TODO
 
 ## Run Task 6
-> TODO
+```bash
+roslaunch thewalkingdead task6.launch
+```
+
+Notes:
+- 有小可能会失败，可以优化位移偏差 
 
 ## Run Task 7
 > TODO
@@ -88,10 +113,21 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 > TODO
 
 ## Run Task 10
-> TODO
+> **Attention:**
+> You may notice the program is **not** excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
+
+```bash
+# Wait first 10 seconds to start the required services
+roslaunch thewalkingdead task10.launch
+```
+
+优化：
+- 最后几步可以增加 阻尼系数，从而快速拉开完成比赛，缩小用时
 
 ## Run Task 11
-> TODO
+```bash
+roslaunch thewalkingdead task11.launch
+```
 
 ## Run Task 12
 > TODO
@@ -100,19 +136,28 @@ roslaunch thewalkingdead solver_server_node.launch urdf_path:=${path_to_walker.u
 > TODO
 
 ## Run Task 14
-> TODO
+```bash
+roslaunch thewalkingdead task14.launch
+```
+优化:
+- 可以试着增加阻抗提高重心稳定度，然后可以增大脚步，以减少比赛用时
+
+Python Dependancy:
+- from scipy.interpolate import KroghInterpolator
 
 ## Run Task 15
-> TODO
+```bash
+roslaunch thewalkingdead task15.launch
+```
 
-notes:
+Notes:
 - 6秒左右完成任务
 - 没有做优化， 具有不稳定性，有一定可能会摔倒
 - 采用倒立摆模型
 - 除了Ref中的dynamic时候的步态规划， 还分别增加了起步与止步的步态规划
 - 参考: 
     - 双足机器人爬楼梯步态规划与参数 吴飞 （文中起码有超出10处错误）
-    - 双足机器人不行仿真预实验研究 史耀强
+    - 双足机器人步行仿真预实验研究 史耀强
 
 Python Dependancy:
 - from scipy.interpolate import KroghInterpolator

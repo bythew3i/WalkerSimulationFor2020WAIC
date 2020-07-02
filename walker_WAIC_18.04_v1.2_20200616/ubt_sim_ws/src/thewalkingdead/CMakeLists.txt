@@ -17,8 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
   webots_api
   kdl_parser
   message_generation
+<<<<<<< HEAD
   tf
   camera_info_manager
+=======
+>>>>>>> 7bc78f056aecb3e9e14dd14ab58335dc5a812122
 )
 find_package(Eigen3)
 

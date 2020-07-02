@@ -73,7 +73,7 @@ def goto_task1():
         print(str(exc))
 
 def task1():
-    rospy.init_node('switch_light_motion', anonymous=True)
+    rospy.init_node('task1', anonymous=True)
 
     interllude = rospy.Duration(0.5, 0)
     

@@ -11,7 +11,7 @@ H = 0.1404
 G = 9.8
 Zch = 0.098
 W = 0.220
-S = 0.30
+S = 0.296
 Ht = 0.1
 
 # Adjustable variables
@@ -500,7 +500,7 @@ def robot_update_r_leg(pos, ankle, knee, hip):
     pos[8] = hip
 
 
-rospy.init_node('motion', anonymous=True)
+rospy.init_node('task15', anonymous=True)
 
 rospy.wait_for_service('/walker/sence', timeout=10)
 scene_service = rospy.ServiceProxy(
@@ -528,15 +528,15 @@ knee_init = f_s_knee_start(0)
 hip_init = f_s_hip_start(0)
 delta_init = -f_delta(T/2)
 
-time = 0
-vis_t = []
-vis_r_ankle = []
-vis_r_knee = []
-vis_r_hip = []
-vis_l_ankle = []
-vis_l_knee = []
-vis_l_hip = []
-vis_delta = []
+# time = 0
+# vis_t = []
+# vis_r_ankle = []
+# vis_r_knee = []
+# vis_r_hip = []
+# vis_l_ankle = []
+# vis_l_knee = []
+# vis_l_hip = []
+# vis_delta = []
 
 while not rospy.is_shutdown():
     timer += 0.001

@@ -41,7 +41,7 @@ git fetch upstream master
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: false}"
     ```
-- [ ] （30分）任务6：推平板车
+- [x] ~~（30分）任务6：推平板车~~
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: false}"
     ```
@@ -52,7 +52,7 @@ git fetch upstream master
 
 ### （总计60分） 运动控制+视觉模式 Vision Mode
 > 完成一项40分；两项50分；三项60分
-- [ ] 任务3：拿饮料罐
+- [x] ~~任务3：拿饮料罐~~
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: false, vision: true}"
     ```
@@ -60,7 +60,7 @@ git fetch upstream master
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: false, vision: true}"
     ```
-- [ ] 任务11：开冰箱 
+- [x] ~~任务11：开冰箱~~
     ```
     rosservice call /walker/sence "{scene_name: OpenFridge, nav: false, vision: true}"
     ```
@@ -108,7 +108,7 @@ git fetch upstream master
 > - \>= 60s：10分
 > 
 
-- [ ] （60分）任务14：搬箱子
+- [x] ~~（60分）任务14：搬箱子~~
     ```
     rosservice call /walker/sence "{scene_name: CarryBox, nav: false, vision: false}"
     ```

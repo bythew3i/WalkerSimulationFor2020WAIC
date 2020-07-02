@@ -141,6 +141,28 @@ def f_m_hip(t):
 
 
 
+def debugT(trac1, trac2, tt):
+    print("{}(0)=={}(T): {} == {}  {}".format(
+        trac1.__name__,
+        trac2.__name__,
+        trac1(0), 
+        trac2(tt), 
+        abs(trac1(0)-trac2(tt)) < 1e-6
+    ))
+    print("{}(0)=={}(T): {} == {}  {}".format(
+        trac2.__name__,
+        trac1.__name__,
+        trac2(0), 
+        trac1(tt), 
+        abs(trac2(0)-trac1(tt)) < 1e-6,
+    ))
+
+
+
+debugT(f_s_ankle, f_m_ankle, T)
+debugT(f_s_knee, f_m_knee, T)
+debugT(f_s_hip, f_m_hip, T)
+
 
 
 
@@ -474,7 +496,7 @@ def gen_full_trajectory(f_start, f1, f2, f_stop):
 # plt.show()
 
 
-
+"""
 #################################################################################
 #################################################################################
 # ROS code
@@ -592,3 +614,5 @@ while not rospy.is_shutdown():
 #     title="Delta Trajectory in {}T={}s".format(nT+2, (nT+2)*T)
 # )
 # plt.show()
+
+"""
