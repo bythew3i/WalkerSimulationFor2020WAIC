@@ -6,3 +6,4 @@
 *.wbproj
 *.pyc
 .vscode
+**/3dcloud.bin
