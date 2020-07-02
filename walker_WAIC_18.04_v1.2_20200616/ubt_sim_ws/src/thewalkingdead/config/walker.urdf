@@ -41,6 +41,45 @@
     </collision>
   </link>
   <link
+    name="boteye_imu_link" />
+  <joint
+    name="base_boteye_imu" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="boteye_imu_link" />
+  </joint>
+
+  <link
+    name="boteye_link" />
+
+  <joint
+    name="base_boteye_link" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="boteye_link" />
+  </joint>
+
+  <link
+    name="top_depth_link" />
+
+  <joint 
+    name="base_top_depth" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="top_depth_link" />
+  </joint>
+
+  <link
+    name="head_depth_link" />
+
+  <joint 
+    name="base_head_depth" type="fixed">
+    <origin xyz="0 0.3229 0" rpy="0 -0.349 0" />
+    <parent link="base_link" />
+    <child link="head_depth_link" />
+  </joint>
+  
+  <link
     name="right_limb_l1">
     <inertial>
       <origin

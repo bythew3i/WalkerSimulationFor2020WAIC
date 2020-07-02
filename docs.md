@@ -67,18 +67,36 @@ roslaunch thewalkingdead task2.launch
 ```
 
 ## Run Task 3
-> TODO
+```bash
+roslaunch thewalkingdead task3.launch
+```
+Notes:
+- 增加了位移偏差末端补偿系数，提高了抓取 4/5 的准确率
+- 有待于做更多测试，有小可能会失败
 
 ## Run Task 4
 > TODO
 
 ## Run Task 5
-> TODO
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task5.launch
+```
 
 ## Run Task 6
 ```bash
 roslaunch thewalkingdead task6.launch
 ```
+
+Notes:
+- 有小可能会失败，可以优化位移偏差 
 
 ## Run Task 7
 > TODO
@@ -86,8 +104,18 @@ roslaunch thewalkingdead task6.launch
 ## Run Task 8
 > TODO
 
-## Run Task 8
-> TODO
+## Run Task 9
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task9.launch
+```
 
 ## Run Task 10
 > **Attention:**
@@ -110,7 +138,17 @@ roslaunch thewalkingdead task11.launch
 > TODO
 
 ## Run Task 13
-> TODO
+> nav_prepare.launch file starts all services that are reqruied by navigation,
+including webots, leg_motion etc. Please give ~30s for everything to boot up,
+and for the robot entering dynamic mode.
+
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+# Wait for about 30s...
+roslaunch thewalkingdead task5.launch
+```
 
 ## Run Task 14
 ```bash
@@ -134,7 +172,7 @@ Notes:
 - 除了Ref中的dynamic时候的步态规划， 还分别增加了起步与止步的步态规划
 - 参考: 
     - 双足机器人爬楼梯步态规划与参数 吴飞 （文中起码有超出10处错误）
-    - 双足机器人不行仿真预实验研究 史耀强
+    - 双足机器人步行仿真预实验研究 史耀强
 
 Python Dependancy:
 - from scipy.interpolate import KroghInterpolator
