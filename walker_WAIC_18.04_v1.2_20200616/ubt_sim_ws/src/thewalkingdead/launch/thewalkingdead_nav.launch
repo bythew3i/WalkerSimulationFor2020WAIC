@@ -1,0 +1,9 @@
+<launch>
+
+    <arg name="task" value="task5" />
+
+    <param name="/use_sim_time" value="true" />
+
+    <node pkg="thewalkingdead" type="$(arg task).py" name="$(arg task)_runner" output="screen"/>
+
+</launch>
