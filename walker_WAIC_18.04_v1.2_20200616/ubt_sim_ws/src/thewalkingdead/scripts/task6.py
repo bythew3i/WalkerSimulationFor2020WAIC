@@ -206,20 +206,6 @@ class Robot():
         return list(resp.limbTwist)
     
 def main():
-    # Load scene
-    rospy.wait_for_service("/walker/sence")
-    try:
-        scheduler = rospy.ServiceProxy("/walker/sence", SceneSelection)
-        request = SceneSelectionRequest()
-        request.scene_name = "PushCart"
-        request.nav = False
-        request.vision = False
-        response = scheduler(request)
-        print(response)
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-        
-    rospy.init_node("task6")
     robot = Robot()
     # wait for subscriber to get msgs
     while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
@@ -567,5 +553,18 @@ def main():
     
     
 
-if __name__ == "__main__":
+if __name__ == "__main__":# Load scene
+    rospy.wait_for_service("/walker/sence")
+    try:
+        scheduler = rospy.ServiceProxy("/walker/sence", SceneSelection)
+        request = SceneSelectionRequest()
+        request.scene_name = "PushCart"
+        request.nav = False
+        request.vision = False
+        response = scheduler(request)
+        print(response)
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
+        
+    rospy.init_node("task6")
     main()
