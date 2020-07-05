@@ -12,38 +12,50 @@ import math
 
 PI = 3.141592654
 
+
 def _dist(x, y):
-    return math.sqrt(sum(map(lambda (a, b) : (a-b)*(a-b), zip(x, y))))
+    return math.sqrt(sum(map(lambda (a, b): (a-b)*(a-b), zip(x, y))))
+
 
 def _dot(u, v):
     return sum([a*b for a, b in zip(u, v)])
 
+
 def _todeg(rad):
     return rad * 57.2957795
 
+
 def _torad(deg):
     return deg / 180.0 * PI
+
 
 def _origin_symmetric_angle(rad):
     p = [-math.cos(rad), -math.sin(rad)]
     return math.atan2(p[1], p[0])
 
+
 class Navigation(object):
     def __init__(self):
-        # self.dcfg_client = dynamic_reconfigure.client.Client("orb_slam2_stereo", 
+        # self.dcfg_client = dynamic_reconfigure.client.Client("orb_slam2_stereo",
         #     timeout=10, config_callback=self._configure_orb_slam_callback)
-        
+
         self._lock = threading.Lock()
         self._lock_step = threading.Lock()
         self._lock_stat = threading.Lock()
 
+        # TODO: rewrite these variables with @property decorator
+        # and getter, setters, encapsulate locking mechanisms.
+        # https://www.python-course.eu/python3_properties.php
         self.position = None
         self.yaw = None
         self.total_step = None
 
-        self.odom_listner = rospy.Subscriber("/odom", Odometry, self._odom_callback, queue_size=10)
-        self.step_listener = rospy.Subscriber("/Leg/StepNum", Int64, self._step_callback, queue_size=10)
-        self.nav_pub = rospy.Publisher("/nav/cmd_vel_nav", Twist, queue_size=10, latch=True)
+        self.odom_listner = rospy.Subscriber(
+            "/odom", Odometry, self._odom_callback, queue_size=10)
+        self.step_listener = rospy.Subscriber(
+            "/Leg/StepNum", Int64, self._step_callback, queue_size=10)
+        self.nav_pub = rospy.Publisher(
+            "/nav/cmd_vel_nav", Twist, queue_size=10, latch=True)
 
         # Wait for incoming data
         self._wait_for_step_num()
@@ -55,12 +67,12 @@ class Navigation(object):
         with self._lock:
             self.position = [d.pose.pose.position.x, d.pose.pose.position.y]
             self._rot = d.pose.pose.orientation
-            self._rot_e = tf.transformations.euler_from_quaternion([self._rot.x, 
+            self._rot_e = tf.transformations.euler_from_quaternion([self._rot.x,
                                                                     self._rot.y,
                                                                     self._rot.z,
                                                                     self._rot.w])
             self.yaw = self._rot_e[2]
-    
+
     def _step_callback(self, d):
         with self._lock_step:
             self.total_step = int(d.data)
@@ -134,6 +146,14 @@ class Navigation(object):
             with self._lock_step:
                 cur_step = self.total_step
 
+    def compute_min_turn_angle_dir(self, yaw, t_yaw):
+        angle = (t_yaw - yaw + 2 * PI) % (2*PI)
+        sign = 1  # ccw
+        if angle > PI:
+            angle = 2*PI - angle
+            sign = -1  # cw
+        return angle, sign
+
     def halt(self, t=1.0):
         r = rospy.Rate(10)
         s = 0.0
@@ -142,21 +162,46 @@ class Navigation(object):
             s += 0.1
             r.sleep()
 
+    def turn_for(self, angle):
+        sign = 1 if angle > 0 else -1
+        angle = abs(angle)
+        step_lengths = [0.35, 0.175, 0.0875,
+                        0.04375, 0.021875, 0.0109375, 0.00546875]
+        steps = self._compute_steps_angle(step_lengths, abs(angle))
+        rospy.loginfo("Angle: %f, direction: %s, Steps to turn: %s", angle,
+                        'CCW' if sign > 0 else 'CW', str(steps))
+
+        self._wait_for_step()
+        with self._lock_step:
+            cur_step = self.total_step
+
+        r = rospy.Rate(10)
+        for i in range(len(steps)):
+            tar_step = cur_step + steps[i]
+            while cur_step < tar_step:
+                self.nav_pub.publish(self._nav_msg(az=step_lengths[i]*sign))
+                with self._lock_step:
+                    cur_step = self.total_step
+                r.sleep()
+
+    # TODO: rewrite turn_to using turn_for
     def turn_to(self, t_yaw):
         with self._lock:
             yaw = self.yaw
-                
-        angle = (t_yaw - yaw + 2 * PI) % (2*PI)
-        sign = 1 # ccw
-        if angle > PI:
-            angle = 2*PI - angle
-            sign = -1 # cw 
 
-        step_lengths = [0.35, 0.175, 0.0875, 0.04375, 0.021875, 0.0109375, 0.00546875]
+        # angle = (t_yaw - yaw + 2 * PI) % (2*PI)
+        # sign = 1  # ccw
+        # if angle > PI:
+        #     angle = 2*PI - angle
+        #     sign = -1  # cw
+        angle, sign = self.compute_min_turn_angle_dir(yaw, t_yaw)
+
+        step_lengths = [0.35, 0.175, 0.0875,
+                        0.04375, 0.021875, 0.0109375, 0.00546875]
         steps = self._compute_steps_angle(step_lengths, angle)
-        rospy.loginfo("Angle: %f, direction: %s, Steps to turn: %s", angle, 
-            'CCW' if sign > 0 else 'CW', str(steps))
-        
+        rospy.loginfo("Angle: %f, direction: %s, Steps to turn: %s", angle,
+                      'CCW' if sign > 0 else 'CW', str(steps))
+
         self._wait_for_step()
         with self._lock_step:
             cur_step = self.total_step
@@ -175,7 +220,7 @@ class Navigation(object):
         step_list = self._compute_steps_linear(step_lengths, abs(t_x))
         sign = 1 if t_x > 0 else -1
         rospy.loginfo("t_x: %f, Steps to walk: %s, Direction: %s",
-                        t_x, str(step_list), 'forward' if sign > 0 else 'backward')
+                      t_x, str(step_list), 'forward' if sign > 0 else 'backward')
 
         self._wait_for_step()
         with self._lock_step:
@@ -195,7 +240,7 @@ class Navigation(object):
         step_list = self._compute_steps_linear(step_lengths, abs(t))
         sign = 1 if t > 0 else -1
         rospy.loginfo("t: %f, Steps to walk: %s, Direction: %s",
-                        t, str(step_list), 'left' if sign > 0 else 'right')
+                      t, str(step_list), 'left' if sign > 0 else 'right')
 
         self._wait_for_step()
         with self._lock_step:
@@ -220,13 +265,16 @@ class Navigation(object):
         with self._lock:
             cur_pos = self.position
             cur_yaw = self.yaw
-        rospy.logdebug("Current position: %s, Target position: %s", str(cur_pos), str(tar_pos))
+        rospy.logdebug("Current position: %s, Target position: %s",
+                       str(cur_pos), str(tar_pos))
         if not head_on:
-            tar_yaw, tar_dist = self._compute_target_yaw_dist(cur_pos, tar_pos, cur_yaw)
+            tar_yaw, tar_dist = self._compute_target_yaw_dist(
+                cur_pos, tar_pos, cur_yaw)
         else:
             tar_yaw, tar_dist = self._compute_target_yaw_dist(cur_pos, tar_pos)
 
-        rospy.logdebug("Target yaw: %s, target distance: %s", str(tar_yaw), str(tar_dist))
+        rospy.logdebug("Target yaw: %s, target distance: %s",
+                       str(tar_yaw), str(tar_dist))
 
         rospy.logdebug("GOTO::Starting turn_to...")
         self.turn_to(tar_yaw)
@@ -235,8 +283,9 @@ class Navigation(object):
         # Test this in the morning
 
     def wait_for_orb_slam(self):
-        rospy.wait_for_message("/orb_slam2_stereo/map_points", PointCloud2, None)
-    
+        rospy.wait_for_message(
+            "/orb_slam2_stereo/map_points", PointCloud2, None)
+
     def configure_orb_slam_localization(self):
         self.dcfg_client.update_configuration({"localize_only": True})
 
@@ -253,12 +302,14 @@ class Navigation(object):
             try:
                 self.nav_pub.publish(self._nav_msg(az=-0.35))
             except rospy.ServiceException as e:
-                rospy.logerror("Navigation::Failure in sending message to /nav/cmd_vel_nav")
+                rospy.logerror(
+                    "Navigation::Failure in sending message to /nav/cmd_vel_nav")
                 # raise e # try keep sending.
-            
+
             r.sleep()
-        
-        rospy.loginfo("Navigation::Detected large position shift, assuming relocalization happened...")
+
+        rospy.loginfo(
+            "Navigation::Detected large position shift, assuming relocalization happened...")
         # Once relocation finishes, orb_slam2 will start sending /map->/camera_link tf
         # which will be picked up by odom_publisher
         self._wait_for_odom_data()
