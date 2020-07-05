@@ -3,12 +3,13 @@
 import rospy
 from webots_api.srv import SceneSelection, SceneSelectionRequest
 from walker_srvs.srv import leg_motion_MetaFuncCtrl, leg_motion_MetaFuncCtrlRequest
-from std_msgs.msg import Int64
+from std_msgs.msg import Int64, String
 from geometry_msgs.msg import Twist, WrenchStamped
 from ubt_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
 import time
+from math import cos, sin, pi
 
 class Robot():
     def __init__(self):
@@ -31,6 +32,7 @@ class Robot():
         self.lwrist_sensor = None
         self.rwrist_sensor = None
         self.leg_step_num = None
+        self.leg_status = None
 
                  
         # Establish services
@@ -86,6 +88,11 @@ class Robot():
             "/Leg/StepNum",
             Int64,
             self.legStepNumSubscriber
+        )
+        rospy.Subscriber(
+            "/Leg/leg_status",
+            String,
+            self.legStatusCallback
         )
         
         # Initialize publishers
@@ -167,6 +174,9 @@ class Robot():
     
     def legStepNumSubscriber(self,msg):
         self.leg_step_num = msg.data
+        
+    def legStatusCallback(self,msg):
+        self.leg_status = msg.data
     
     # @staticmethod  
     def __cmd2pos__(self, cmd, left_right):
@@ -184,12 +194,15 @@ class Robot():
     def __pos2cmd__(self, pos, cmd, left_right):
         if self.ik_service==None:
             raise Exception("Failed: ik_service")
-        resp = self.ik_service(
-            LeftRight = left_right,
-            limbTwist = cmd,
-            targetPos=pos[:3], 
-            targetOri=pos[3:7]
-        )
+        try:
+            resp = self.ik_service(
+                LeftRight = left_right,
+                limbTwist = cmd,
+                targetPos=pos[:3], 
+                targetOri=pos[3:7]
+            )
+        except Exception as e:
+            print(e)
         return list(resp.limbTwist)
     
 def main():
@@ -408,33 +421,49 @@ def main():
     time_elapsed = 0
     duration = 10
     rate = rospy.Rate(1000)
-    initial_leftHand_cmd = robot.leftHand_cmd
-    initial_rightHand_cmd = robot.rightHand_cmd
-    
+    initial_leftLimb_cmd = robot.leftLimb_cmd
+    initial_rightLimb_cmd = robot.rightLimb_cmd
     initial_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     initial_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-    mu = 3e-6
+    mu = 1e-7
     beta = 0.02
-    step_num = 13
+    step_num = 14
+    theta = pi/4
     
     while not rospy.is_shutdown() and robot.leg_step_num < step_num:
         legmotion_msg = Twist()
         legmotion_msg.linear.x = 0.2
         robot.legmotion_publisher.publish(legmotion_msg)
         
+        # Get wrist sensor data 
         lfx = robot.lwrist_sensor.force.x
         lfy = robot.lwrist_sensor.force.y
         lfz = robot.rwrist_sensor.force.z
+        # Sensor data constraints
+        if lfx > 150: lfx = 150
+        if lfx < -150: lfx = -150
+        if lfy > 150: lfy = 150
+        if lfy < -150: lfy = -150
+        if lfz > 150: lfz = 150
+        if lfz < -150: lfz = -150
+        # fk
         robot.leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
-        robot.tar_leftLimb_pos[0] = robot.leftLimb_pos[0] - lfx*mu if lfx < 0 else robot.leftLimb_pos[0]
+        robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+        # X axis adjustment
+        robot.tar_leftLimb_pos[0] = robot.leftLimb_pos[0] - lfx*mu if lfx < -9 else robot.leftLimb_pos[0]
+        # Adjust toward initial pos X
         robot.tar_leftLimb_pos[0] += (initial_leftLimb_pos[0] - robot.tar_leftLimb_pos[0]) * beta
-        robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - lfy*mu
-        robot.tar_leftLimb_pos[1] += (initial_leftLimb_pos[1] - robot.tar_leftLimb_pos[1]) * beta
-        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - lfz*mu
-        robot.tar_leftLimb_pos[2] += (initial_leftLimb_pos[2] - robot.tar_leftLimb_pos[2]) * beta
+        # Adjust pos y based on 2d force and center of pos y for two limbs 
+        robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - (lfz*sin(theta) + lfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
+        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfz*cos(theta)+ lfy*sin(theta))*mu
+        # ik
         robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+        # Adjust toward initial cmds
+        robot.step_leftLimb_cmd = [robot.step_leftLimb_cmd[i] 
+                                   + (initial_leftLimb_cmd[i] - robot.step_leftLimb_cmd[i]) * beta 
+                                   for i in range(len(robot.tar_leftLimb_cmd))]
         msg = JointCommand()
         msg.mode = 5
         msg.command = robot.step_leftLimb_cmd
@@ -443,14 +472,21 @@ def main():
         rfx = robot.rwrist_sensor.force.x
         rfy = robot.rwrist_sensor.force.y
         rfz = robot.rwrist_sensor.force.z
-        robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-        robot.tar_rightLimb_pos[0] = robot.rightLimb_pos[0] - rfx*mu if rfx < 0 else robot.rightLimb_pos[0]
+        if rfx > 150: rfx = 150
+        if rfx < -150: rfx = -150
+        if rfy > 150: rfy = 150
+        if rfy < -150: rfy = -150
+        if rfz > 150: rfz = 150
+        if rfz < -150: rfz = -150
+        # robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+        robot.tar_rightLimb_pos[0] = robot.rightLimb_pos[0] - rfx*mu if rfx < -9 else robot.rightLimb_pos[0]
         robot.tar_rightLimb_pos[0] += (initial_rightLimb_pos[0] - robot.tar_rightLimb_pos[0]) * beta
-        robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - rfy*mu
-        robot.tar_rightLimb_pos[1] += (initial_rightLimb_pos[1] - robot.tar_rightLimb_pos[1]) * beta
-        robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - rfz*mu
-        robot.tar_rightLimb_pos[2] += (initial_rightLimb_pos[2] - robot.tar_rightLimb_pos[2]) * beta
+        robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - (rfz*sin(theta) + rfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
+        robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - (rfz*cos(theta) + rfy*sin(theta))*mu
         robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+        robot.step_rightLimb_cmd = [robot.step_rightLimb_cmd[i] 
+                                   + (initial_rightLimb_cmd[i] - robot.step_rightLimb_cmd[i]) * beta 
+                                   for i in range(len(robot.tar_rightLimb_cmd))]
         msg = JointCommand()
         msg.mode = 5
         msg.command = robot.step_rightLimb_cmd
@@ -460,6 +496,71 @@ def main():
         time_elapsed += 0.001
     
     robot.legmotion_stop()
+
+    duration = 1
+    time_elapsed = 0
+    # Adjust limb for smooth stop
+    while time_elapsed < duration:
+        legmotion_msg = Twist()
+        legmotion_msg.linear.x = 0.2
+        robot.legmotion_publisher.publish(legmotion_msg)
+        
+        # Get wrist sensor data 
+        lfx = robot.lwrist_sensor.force.x
+        lfy = robot.lwrist_sensor.force.y
+        lfz = robot.rwrist_sensor.force.z
+        # Sensor data constraints
+        if lfx > 150: lfx = 150
+        if lfx < -150: lfx = -150
+        if lfy > 150: lfy = 150
+        if lfy < -150: lfy = -150
+        if lfz > 150: lfz = 150
+        if lfz < -150: lfz = -150
+        # fk
+        robot.leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
+        robot.rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
+        # X axis adjustment
+        robot.tar_leftLimb_pos[0] = robot.leftLimb_pos[0] - lfx*mu if lfx < -9 else robot.leftLimb_pos[0]
+        # Adjust toward initial pos X
+        robot.tar_leftLimb_pos[0] += (initial_leftLimb_pos[0] - robot.tar_leftLimb_pos[0]) * beta
+        # Adjust pos y based on 2d force and center of pos y for two limbs 
+        robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - (lfz*sin(theta) + lfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
+        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfz*cos(theta)+ lfy*sin(theta))*mu
+        # ik
+        robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+        # Adjust toward initial cmds
+        robot.step_leftLimb_cmd = [robot.step_leftLimb_cmd[i] 
+                                   + (initial_leftLimb_cmd[i] - robot.step_leftLimb_cmd[i]) * beta 
+                                   for i in range(len(robot.tar_leftLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_leftLimb_cmd
+        robot.leftLimbPublisher.publish(msg)
+        
+        rfx = robot.rwrist_sensor.force.x
+        rfy = robot.rwrist_sensor.force.y
+        rfz = robot.rwrist_sensor.force.z
+        if rfx > 150: rfx = 150
+        if rfx < -150: rfx = -150
+        if rfy > 150: rfy = 150
+        if rfy < -150: rfy = -150
+        if rfz > 150: rfz = 150
+        if rfz < -150: rfz = -150
+        robot.tar_rightLimb_pos[0] = robot.rightLimb_pos[0] - rfx*mu if rfx < -9 else robot.rightLimb_pos[0]
+        robot.tar_rightLimb_pos[0] += (initial_rightLimb_pos[0] - robot.tar_rightLimb_pos[0]) * beta
+        robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - (rfz*sin(theta) + rfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
+        robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - (rfz*cos(theta) + rfy*sin(theta))*mu
+        robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+        robot.step_rightLimb_cmd = [robot.step_rightLimb_cmd[i] 
+                                   + (initial_rightLimb_cmd[i] - robot.step_rightLimb_cmd[i]) * beta 
+                                   for i in range(len(robot.tar_rightLimb_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_rightLimb_cmd
+        robot.rightLimbPublisher.publish(msg)
+        
+        rate.sleep()
+        time_elapsed += 0.001
 
     # Shutdown callback
     rospy.on_shutdown(robot.legmotion_stop)

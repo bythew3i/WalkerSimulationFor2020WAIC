@@ -1,4 +1,4 @@
-image: /home/wyh/Documents/2020-06-29-map/occupancy_grid.pgm
+image: occupancy_grid.pgm
 resolution: 0.050000
 origin: [-3.800000, -9.176373, 0.000000]
 negate: 0
