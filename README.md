@@ -68,7 +68,7 @@ git fetch upstream master
 
 ### （总计75分）运动控制+视觉+导航模式 Navigation Mode
 > 计分表述不明 
-- [ ] 任务4：拿饮料罐
+- [x] ~~任务4：拿饮料罐~~
     ```
     rosservice call /walker/sence "{scene_name: GraspCup, nav: true, vision: false}"
     ```
@@ -84,7 +84,7 @@ git fetch upstream master
     ```
     rosservice call /walker/sence "{scene_name: PushCart, nav: true, vision: false}"
     ```
-- [ ] 任务12：开冰箱
+- [x] ~~任务12：开冰箱~~
     ```
     rosservice call /walker/sence "{scene_name: OpenFridge, nav: true, vision: false}"
     ```

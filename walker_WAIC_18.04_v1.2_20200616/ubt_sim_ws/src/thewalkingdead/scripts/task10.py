@@ -8,8 +8,6 @@ from geometry_msgs.msg import Twist, WrenchStamped
 from sensor_msgs.msg import JointState
 from thewalkingdead.srv import Solver
 from webots_api.srv import SceneSelection
-import time
-
 
 class Task10(object):
     def __init__(self):
@@ -311,8 +309,6 @@ class Task10(object):
 
 if __name__ == '__main__':
     try:
-        print("\nWait 10 seconds to start all required services ...\n")
-        time.sleep(10)
         task = Task10()
         task.solve()
     except rospy.ROSInterruptException as e:

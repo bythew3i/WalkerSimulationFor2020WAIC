@@ -25,7 +25,7 @@
     <node pkg="thewalkingdead" name="navigation_prepare" type="navigation_prepare.py" output="screen"/>
 
     <!-- GUIs -->
-    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" output="log"/>
+    <!-- <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" output="log"/> -->
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find thewalkingdead)/config/walker_nav.rviz" output="screen"/>
 
 </launch>
