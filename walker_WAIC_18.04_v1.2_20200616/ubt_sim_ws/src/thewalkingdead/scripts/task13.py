@@ -13,6 +13,7 @@ waypoints = [[1.00, -7.00], #About the center of the left-sofa-passage
 final_yaw = 1.5708
 
 def task():
+    global nav
     nav = navigation.Navigation()
     rospy.loginfo("Attempting Relocalize...")
     nav.relocalize()

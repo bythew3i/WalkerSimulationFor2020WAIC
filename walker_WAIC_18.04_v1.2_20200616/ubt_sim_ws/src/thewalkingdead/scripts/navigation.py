@@ -236,8 +236,9 @@ class Navigation(object):
                 r.sleep()
 
     def move_sideway_for(self, t):
-        step_lengths = [0.04]
+        step_lengths = [0.04, 0.02, 0.01, 0.005]
         step_list = self._compute_steps_linear(step_lengths, abs(t))
+        step_list = [s*2 for s in step_list] #2 steps for sideway, just like turning.
         sign = 1 if t > 0 else -1
         rospy.loginfo("t: %f, Steps to walk: %s, Direction: %s",
                       t, str(step_list), 'left' if sign > 0 else 'right')
@@ -280,7 +281,6 @@ class Navigation(object):
         self.turn_to(tar_yaw)
         rospy.logdebug("GOTO::Starting move for...")
         self.move_for(tar_dist)
-        # Test this in the morning
 
     def wait_for_orb_slam(self):
         rospy.wait_for_message(

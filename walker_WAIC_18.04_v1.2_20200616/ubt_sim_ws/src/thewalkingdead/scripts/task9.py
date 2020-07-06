@@ -5,14 +5,13 @@ import rospy
 
 waypoints = [[1.00, -7.00], #About the center of the left-sofa-passage
                 [1.00, -4.00], #Intermediate waypoint, for collision avoidance
-                [-0.707, 1.705], #In align with the pushcart task blue box
+                [0.00, 1.705], #In align with the pushcart task blue box
                 [-1.754, 1.705] #The blue box
             ]
 final_yaw = -1.5708
 
 def task():
-    rospy.init_node("task9_runner", anonymous=True, log_level=rospy.INFO)
-
+    global nav
     nav = navigation.Navigation()
     rospy.loginfo("Attempting Relocalize...")
     nav.relocalize()
@@ -40,6 +39,7 @@ def task():
 
 if __name__ == '__main__':
     try:
+        rospy.init_node("task9_runner", anonymous=True, log_level=rospy.INFO)
         task()
     except rospy.ROSInterruptException:
         pass
