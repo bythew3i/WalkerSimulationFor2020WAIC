@@ -5,14 +5,14 @@
     <arg name="account_file" default="$(find thewalkingdead)/config/user_account.json"/>
 
     <!-- webots -->
-    <node type="start_webots.sh" name="webots" pkg="thewalkingdead" output="log"/>
+    <node type="start_webots.sh" name="webots" pkg="thewalkingdead"/>
 
     <!-- Leg motions -->
     <include file="$(find thewalkingdead)/launch/walker2_leg.launch" >
         <arg name="account_file" value="$(arg account_file)" />
     </include>
 
-    <node type="solver_server_node" name="solver_server_node" pkg="thewalkingdead">
+    <node type="solver_server_node" name="solver_server_node" pkg="thewalkingdead"  output="screen">
         <param name="walker_urdf_path" value="$(arg urdf_path)" />
     </node>
 

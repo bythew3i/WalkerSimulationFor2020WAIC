@@ -110,12 +110,17 @@ class OpenFridgeSolver(object):
         raise Exception("Failed: leg_motion_stop")
 
 
-    def measure_depth(self, off_r=0, off_c=0):
-        r = self.head_depth.height / 2 + off_r
-        c = self.head_depth.width / 2 + off_c
+    def measure_depth(self):
+        r = 0
+        c = self.head_depth.width / 2
         bridge = cv_bridge.CvBridge()
         cv_depth = bridge.imgmsg_to_cv2(self.head_depth, desired_encoding="passthrough")
         cv_depth = cv_depth.astype(float)
+
+        while r < self.head_depth.height / 2:
+            if cv_depth[r][c] < 5:
+                return cv_depth[r+5][c]
+            r += 1
         return cv_depth[r][c]
 
 
@@ -162,10 +167,10 @@ class OpenFridgeSolver(object):
 
 
         # SOME CONSTANTS
-        # TAR_DEPTH_X = 1.3445
-        # TAR_DEPTH_Y = 2.9363
-        TAR_DEPTH_X = 1.360
-        TAR_DEPTH_Y = 2.920
+        # TAR_DEPTH_X = 1.3377
+        # TAR_DEPTH_Y = 2.9407
+        TAR_DEPTH_X = 1.3750
+        TAR_DEPTH_Y = 2.9350
         MEASURE_Y_TIME = 1
         MEASURE_X_TIME = 1
         UNIT_Y_STEP = 0.04
@@ -201,8 +206,8 @@ class OpenFridgeSolver(object):
                     head_ctrl_msg.command[1] = self._trans(0, -20.0/180*pi, fac)
                     
                     head_ctrl_pub.publish(head_ctrl_msg)
-                elif timer < MEASURE_Y_TIME + 0.2:
-                    # wait for 0.2 sec to be stable
+                elif timer < MEASURE_Y_TIME + 0.5:
+                    # wait for 0.5 sec to be stable
                     pass
                 else:
                     dis = self.measure_depth()
@@ -215,8 +220,9 @@ class OpenFridgeSolver(object):
             elif action == 1:
                 self._log("Action 1: Align on Y")
                 if self.step_num.data < abs(move_y):
-                    leg_motion_msg.linear.x = 0
+                    leg_motion_msg.linear.x = 0.0
                     leg_motion_msg.linear.y = UNIT_Y_STEP if move_y > 0 else -UNIT_Y_STEP
+                    leg_motion_msg.angular.z = 0.0
                     leg_motion_pub.publish(leg_motion_msg)
                 else:
                     move_y = 0
@@ -235,8 +241,8 @@ class OpenFridgeSolver(object):
                     head_ctrl_msg.command[0] = self._trans(-pi/2, 0, fac)
                     head_ctrl_msg.command[1] = -20.0/180*pi
                     head_ctrl_pub.publish(head_ctrl_msg)
-                elif timer < MEASURE_X_TIME + 0.2:
-                    # wait for 0.2 sec to be stable
+                elif timer < MEASURE_X_TIME + 0.5:
+                    # wait for 0.5 sec to be stable
                     pass
                 else:
                     dis = self.measure_depth()
@@ -249,7 +255,8 @@ class OpenFridgeSolver(object):
                 self._log("Action 3: Align on X")
                 if self.step_num.data < abs(move_x):
                     leg_motion_msg.linear.x = UNIT_X_STEP if move_x > 0 else -UNIT_X_STEP
-                    leg_motion_msg.linear.y = 0
+                    leg_motion_msg.linear.y = 0.0
+                    leg_motion_msg.angular.z = 0.0
                     leg_motion_pub.publish(leg_motion_msg)
                 else:
                     move_x = 0
@@ -275,7 +282,7 @@ class OpenFridgeSolver(object):
                     # limb
                     r_limb_ctrl_msg.mode = 5
                     r_limb_ctrl_msg.command[0] = self._trans(0, -0.9, fac)
-                    r_limb_ctrl_msg.command[1] = self._trans(0, -0.3, fac)
+                    r_limb_ctrl_msg.command[1] = self._trans(0, -0.5, fac)
                     r_limb_ctrl_msg.command[2] = self._trans(0, 1.57, fac)
                     r_limb_ctrl_msg.command[3] = self._trans(0, -1.2, fac)
                     r_limb_ctrl_msg.command[4] = self._trans(0, -1.57, fac)
@@ -285,13 +292,13 @@ class OpenFridgeSolver(object):
     
                 elif timer < UNIT_GRASP_TIME * 3:
                     fac = (timer - UNIT_GRASP_TIME * 2) / UNIT_GRASP_TIME
-                    r_limb_ctrl_msg.command[1] = self._trans(-0.3, 0, fac)
+                    r_limb_ctrl_msg.command[1] = self._trans(-0.5, 0, fac)
                     r_limb_ctrl_pub.publish(r_limb_ctrl_msg)
 
                 elif timer < UNIT_GRASP_TIME * 4:
                     fac = (timer - UNIT_GRASP_TIME * 3) / UNIT_GRASP_TIME
                     r_hand_ctrl_msg.command[0] = self._trans(0, 1, fac)
-                    r_hand_ctrl_msg.command[1] = self._trans(0, 1, fac)
+                    r_hand_ctrl_msg.command[1] = self._trans(0, 0.1, fac)
                     r_hand_ctrl_msg.command[2] = self._trans(0.8, 1.57, fac)
                     r_hand_ctrl_msg.command[3] = self._trans(0, 1.57, fac)
                     r_hand_ctrl_msg.command[4] = self._trans(0.8, 1.57, fac)
@@ -346,7 +353,7 @@ def task():
     move_to_room()
 
     stop_dynamic()
-    rospy.sleep(rospy.Duration(2.0))
+    # rospy.sleep(rospy.Duration(2.0))
     rospy.loginfo("Dynamic motion stopped.")
 
     Solver = OpenFridgeSolver()
