@@ -201,9 +201,10 @@ class Robot():
                 targetPos=pos[:3], 
                 targetOri=pos[3:7]
             )
+            return list(resp.limbTwist)
         except Exception as e:
             print(e)
-        return list(resp.limbTwist)
+            return
     
 def main():
     robot = Robot()
@@ -446,6 +447,8 @@ def main():
         robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfz*cos(theta) + lfy*sin(theta))*mu
         # ik
         robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+        if robot.step_leftLimb_cmd == None:
+            continue
         # Adjust toward initial cmds
         robot.step_leftLimb_cmd = [robot.step_leftLimb_cmd[i] 
                                    + (initial_leftLimb_cmd[i] - robot.step_leftLimb_cmd[i]) * beta 
@@ -470,6 +473,8 @@ def main():
         robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - (rfz*sin(theta) + rfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
         robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - (rfz*cos(theta) + rfy*sin(theta))*mu
         robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+        if robot.step_rightLimb_cmd == None:
+            continue
         robot.step_rightLimb_cmd = [robot.step_rightLimb_cmd[i] 
                                    + (initial_rightLimb_cmd[i] - robot.step_rightLimb_cmd[i]) * beta 
                                    for i in range(len(robot.tar_rightLimb_cmd))]
