@@ -6,11 +6,13 @@ from walker_srvs.srv import leg_motion_MetaFuncCtrl, leg_motion_MetaFuncCtrlRequ
 from std_msgs.msg import Int64,String
 from geometry_msgs.msg import Twist, WrenchStamped
 from ubt_core_msgs.msg import JointCommand
-from sensor_msgs.msg import JointState, Image
+from sensor_msgs.msg import JointState, Image, Range
 from thewalkingdead.srv import Solver
 from cv_bridge import CvBridge
 import cv2
 import time
+from math import pi
+import task6
 
 class Robot():
     def __init__(self):
@@ -35,6 +37,7 @@ class Robot():
         self.leg_step_num = None
         self.leg_status = None
         self.head_depth = None
+        self.head_cmd = None
 
                  
         # Establish services
@@ -100,6 +103,17 @@ class Robot():
             "/walker/camera/headDepth",
             Image,
             self.headDepthCallback)
+        rospy.Subscriber(
+            "/walker/head/joint_states",
+            JointState,
+            self.headJointStatesCallback
+        )
+        rospy.Subscriber(
+            "/walker/ultrasound/middleBack",
+            Range,
+            self.middleBackUSCallback
+        )
+        
         
         # Initialize publishers
         self.leftLimbPublisher = rospy.Publisher(
@@ -124,6 +138,11 @@ class Robot():
             Twist,
             queue_size=10
             )
+        self.Head_publisher = rospy.Publisher(
+            "/walker/head/controller",
+            JointCommand,
+            queue_size=10
+        )
 
         
         # self.leg
@@ -138,8 +157,7 @@ class Robot():
                 req.cmd = "start"
                 # response
                 res = self.legmotion_service(req)
-                if res.success:
-                    return
+                return res
             except Exception as e:
                 print(e)
         # raise Exception("Failed: legmotion_start")
@@ -187,6 +205,12 @@ class Robot():
     def headDepthCallback(self,msg):
         self.head_depth = msg
     
+    def headJointStatesCallback(self, msg):
+        self.head_cmd = msg.position
+        
+    def middleBackUSCallback(self, msg):
+        self.middleBackRange = msg.range
+    
     # @staticmethod
     def __cmd2pos__(self, cmd, left_right):
         if self.fk_service==None:
@@ -200,10 +224,12 @@ class Robot():
         return list(resp.limbPose)
     
     def measure_depth(self):
+        r = self.head_depth.height / 2
+        c = self.head_depth.width / 2
         bridge = CvBridge()
         cv_image = bridge.imgmsg_to_cv2(self.head_depth,
                                         desired_encoding="passthrough")
-        return cv_image
+        return cv_image[r][c]
     
     # @staticmethod
     def __pos2cmd__(self, pos, cmd, left_right):
@@ -218,6 +244,106 @@ class Robot():
         return list(resp.limbTwist)
     
 def main():
+    
+    robot = Robot()
+    # wait for subscriber to get msgs
+    while (robot.head_cmd == None or robot.leftLimb_cmd == None or robot.rightLimb_cmd == None or robot.head_depth == None) and not rospy.is_shutdown():
+        rospy.sleep(0.01)
+    while robot.leg_status == "standInit":
+        rospy.sleep(0.01)
+    
+    # robot.legmotion_start()
+
+    
+    initial_head_cmd = robot.head_cmd
+    # Turn head right
+    rate = rospy.Rate(1000)
+    # robot.tar_head_cmd = [-1.58, -0.34]
+    robot.tar_head_cmd = [-pi/2, -0.1*pi]
+    time_elapsed = 0
+    duration = 0.5
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        robot.step_head_cmd = [initial_head_cmd[i] + 
+                               (robot.tar_head_cmd[i] - initial_head_cmd[i])
+                               * time_elapsed / duration
+                               for i in range(len(initial_head_cmd))]
+        msg = JointCommand()
+        msg.mode = 5
+        msg.command = robot.step_head_cmd
+        robot.Head_publisher.publish(msg)
+        rate.sleep()
+        time_elapsed += 0.001
+    rospy.sleep(0.4)
+    rospy.loginfo(robot.measure_depth())
+    
+    rate = rospy.Rate(1000)
+    duration = 0.2
+    time_elapsed = 0
+    measures = []
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        measures.append(robot.measure_depth())
+        rate.sleep()
+        time_elapsed+=0.001
+    cur_distance_y = sum(measures)/len(measures)
+    
+    # distance from wall on the right
+    tar_distance_y = 1.76327
+    step_size = 0.04
+    diff_y = tar_distance_y - cur_distance_y
+    step_num = abs(diff_y // step_size)*2
+    print("diff_y is ", diff_y)
+    print("step_num", step_num)
+    # start legmotion and move horizontally
+    robot.legmotion_start()
+    rate = rospy.Rate(1000)
+    time_elapsed = 0
+    while not rospy.is_shutdown() and robot.leg_step_num < step_num:
+        msg = Twist()
+        msg.linear.y = step_size if diff_y > 0 else -step_size
+        robot.legmotion_publisher.publish(msg)
+        
+        rate.sleep()
+        time_elapsed += 0.001
+    robot.legmotion_stop()
+    
+    while robot.leg_step_num != 0:
+        rospy.sleep(0.1)
+            
+    # get current distance x
+    rate = rospy.Rate(1000)
+    duration = 0.2
+    time_elapsed = 0
+    measures = []
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        measures.append(robot.middleBackRange)
+        rate.sleep()
+        time_elapsed += 0.001
+    cur_distance_x = sum(measures)/len(measures)
+    
+    # distance from stairs behind
+    tar_distance_x = 1.57535
+    step_size = 0.04
+    diff_x = tar_distance_x - cur_distance_x
+    step_num = abs(diff_x // step_size) +1 
+    
+    robot.legmotion_start()
+
+    rate = rospy.Rate(1000)
+    time_elapsed = 0
+    while not rospy.is_shutdown() and robot.leg_step_num < step_num:
+        msg = Twist()
+        msg.linear.x = step_size if diff_x > 0 else -step_size
+        robot.legmotion_publisher.publish(msg)
+        rate.sleep()
+        time_elapsed += 0.001
+    robot.legmotion_stop()
+    
+    while robot.leg_step_num != 0:
+        rospy.sleep(0.1)
+    
+    task6.main()
+
+if __name__ == "__main__":
     # Load scene
     rospy.wait_for_service("/walker/sence")
     try:
@@ -226,28 +352,11 @@ def main():
         request.scene_name = "PushCart"
         request.nav = False
         request.vision = True
+        # request.vision = False
         response = scheduler(request)
-        print(response)
+        print("scene loaded", response)
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
         
     rospy.init_node("task7")
-    robot = Robot()
-    # wait for subscriber to get msgs
-    while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None or robot.head_depth == None) and not rospy.is_shutdown():
-        pass
-    rospy.loginfo(robot.leg_status)
-    
-    rospy.loginfo(robot.head_depth.height)
-    rospy.loginfo(robot.head_depth.width)
-    rospy.loginfo(robot.head_depth.encoding)
-    rospy.loginfo(robot.measure_depth().dtype)
-    rospy.loginfo(type(robot.measure_depth()))
-    
-    
-    
-    
-    
-
-if __name__ == "__main__":
     main()
