@@ -9,6 +9,7 @@ from webots_api.srv import SceneSelection
 from thewalkingdead.srv import Solver
 
 def goto_task():
+    print("\nWaiting for /walker/sence service ...")
     rospy.wait_for_service("/walker/sence")
     select = rospy.ServiceProxy("/walker/sence", SceneSelection)
     try:

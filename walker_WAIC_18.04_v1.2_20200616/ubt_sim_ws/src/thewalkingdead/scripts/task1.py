@@ -65,6 +65,7 @@ def stage2():
 
 
 def goto_task1():
+    print("\nWaiting for /walker/sence service ...")
     rospy.wait_for_service("/walker/sence")
     select = rospy.ServiceProxy("/walker/sence", SceneSelection)
     try:
@@ -75,7 +76,7 @@ def goto_task1():
 def task1():
     rospy.init_node('task1', anonymous=True)
 
-    interllude = rospy.Duration(0.5, 0)
+    # interllude = rospy.Duration(0.5, 0)
     
     print("Moving to task1...")
     goto_task1()

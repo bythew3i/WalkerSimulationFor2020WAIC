@@ -435,7 +435,8 @@ def trans(start, end, fac):
 rospy.init_node('task14', anonymous=True)
 
 ## service
-rospy.wait_for_service('/walker/sence', timeout=10)
+print("\nWaiting for /walker/sence service ...")
+rospy.wait_for_service('/walker/sence')
 scene_service = rospy.ServiceProxy(
     "/walker/sence", 
     SceneSelection

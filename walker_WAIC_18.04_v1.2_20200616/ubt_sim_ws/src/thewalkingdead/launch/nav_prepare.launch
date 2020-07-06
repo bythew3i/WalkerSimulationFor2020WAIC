@@ -28,6 +28,10 @@
     </node>
 
     <!-- GUIs -->
+<<<<<<< HEAD
+=======
+    <!-- <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" output="log"/> -->
+>>>>>>> f42a1e2dfba70f7b747b3fb718d4edcc5d7cdce2
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find thewalkingdead)/config/walker_nav.rviz" output="screen"/>
 
 </launch>
