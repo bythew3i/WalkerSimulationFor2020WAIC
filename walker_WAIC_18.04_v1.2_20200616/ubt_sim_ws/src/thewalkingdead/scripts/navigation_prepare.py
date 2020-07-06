@@ -32,11 +32,11 @@ def wait_for_leg_service_data():
         pass
 
 # Goto navigation location
-def goto_nav():
+def goto_nav(task):
     rospy.wait_for_service("/walker/sence")
     select = rospy.ServiceProxy("/walker/sence", SceneSelection)
     try:
-        select(scene_name="GraspCup", nav=True, vision=False)
+        select(scene_name=task, nav=True, vision=False)
     except rospy.ServiceException as exc:
         rospy.logerr("Navigation Prepare:: Error going to navigation position: %s", str(exc))
 
@@ -86,8 +86,12 @@ def wait_for_standing():
 def prepare():
     rospy.init_node('navigation_prepare', anonymous=True)
     
+    task = rospy.get_param("navigation_prepare/task")
+    if task not in ["GraspCup", "PushCart", "OpenFridge"]:
+        raise ValueError("Unidentified task: ", task)
+
     rospy.loginfo("Navigation Prepare:: Moving behind sofa...")
-    goto_nav()
+    goto_nav(task)
     rospy.loginfo("Navigation Prepare:: Starting leg motion...")
     start_dynamic()
     rospy.loginfo("Navigation Prepare:: leg motion started...")

@@ -1,7 +1,7 @@
 <launch>
     <param name="/use_sim_time" value="true" />
-
-    <node type="task15.py" name="task15" pkg="thewalkingdead" output="screen" required="true">
-    </node>
+    <!-- webots -->
+    <node type="start_webots.sh" name="webots" pkg="thewalkingdead" output="log"/>
+    <node type="task15.py" name="task15" pkg="thewalkingdead" output="screen"/>
 
 </launch>

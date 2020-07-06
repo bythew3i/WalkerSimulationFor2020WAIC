@@ -68,6 +68,7 @@ roslaunch thewalkingdead task2.launch
 
 ## Run Task 3
 ```bash
+roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task3.launch
 ```
 Notes:
@@ -75,7 +76,10 @@ Notes:
 - 有待于做更多测试，有小可能会失败
 
 ## Run Task 4
-> TODO
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead task4.launch
+```
 
 ## Run Task 5
 > nav_prepare.launch file starts all services that are reqruied by navigation,
@@ -85,18 +89,16 @@ and for the robot entering dynamic mode.
 > You need map_server to host the 2d map file. Install with 
 `sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch task:=GraspCup
 # Wait for about 30s...
 roslaunch thewalkingdead task5.launch
 ```
 
 ## Run Task 6
 ```bash
+roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task6.launch
 ```
-
-Notes:
-- 有小可能会失败，可以优化位移偏差 
 
 ## Run Task 7
 > TODO
@@ -112,17 +114,14 @@ and for the robot entering dynamic mode.
 > You need map_server to host the 2d map file. Install with 
 `sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch task:=PushCart
 # Wait for about 30s...
 roslaunch thewalkingdead task9.launch
 ```
 
 ## Run Task 10
-> **Attention:**
-> You may notice the program is **not** excuted right away. Please allow some time to start all the required services (IK/FK solver and legmotion). Once after 10 seconds waiting, the task 10 will start automaticly.
-
 ```bash
-# Wait first 10 seconds to start the required services
+roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task10.launch
 ```
 
@@ -131,11 +130,15 @@ roslaunch thewalkingdead task10.launch
 
 ## Run Task 11
 ```bash
+roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task11.launch
 ```
 
 ## Run Task 12
-> TODO
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead task12.launch
+```
 
 ## Run Task 13
 > nav_prepare.launch file starts all services that are reqruied by navigation,
@@ -145,7 +148,7 @@ and for the robot entering dynamic mode.
 > You need map_server to host the 2d map file. Install with 
 `sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch task:=OpenFridge
 # Wait for about 30s...
 roslaunch thewalkingdead task13.launch
 ```
