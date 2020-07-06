@@ -298,7 +298,7 @@ def main():
                                RWristRoll,
                                RWristPitch]
     time_elapsed = 0
-    duration = 0.5
+    duration = 2
     rate = rospy.Rate(1000)
     initial_leftLimb_cmd = robot.leftLimb_cmd
     initial_rightLimb_cmd = robot.rightLimb_cmd
@@ -443,7 +443,7 @@ def main():
         robot.tar_leftLimb_pos[0] += (initial_leftLimb_pos[0] - robot.tar_leftLimb_pos[0]) * beta
         # Adjust pos y based on 2d force and center of pos y for two limbs 
         robot.tar_leftLimb_pos[1] = robot.leftLimb_pos[1] - (lfz*sin(theta) + lfy*cos(theta))*mu - (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
-        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfz*cos(theta)+ lfy*sin(theta))*mu
+        robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfz*cos(theta) + lfy*sin(theta))*mu
         # ik
         robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
         # Adjust toward initial cmds

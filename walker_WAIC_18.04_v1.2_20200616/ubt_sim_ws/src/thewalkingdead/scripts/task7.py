@@ -290,7 +290,7 @@ def main():
     tar_distance_y = 1.76327
     step_size = 0.04
     diff_y = tar_distance_y - cur_distance_y
-    step_num = abs(diff_y // step_size)*2
+    step_num = abs(round(diff_y / step_size * 2))
     print("diff_y is ", diff_y)
     print("step_num", step_num)
     # start legmotion and move horizontally
@@ -308,6 +308,8 @@ def main():
     
     while robot.leg_step_num != 0:
         rospy.sleep(0.1)
+        
+    rospy.sleep(1)
             
     # get current distance x
     rate = rospy.Rate(1000)
@@ -324,7 +326,7 @@ def main():
     tar_distance_x = 1.57535
     step_size = 0.04
     diff_x = tar_distance_x - cur_distance_x
-    step_num = abs(diff_x // step_size) +1 
+    step_num = abs(round(diff_x / step_size))
     
     robot.legmotion_start()
 
