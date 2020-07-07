@@ -77,7 +77,7 @@ Notes:
 
 ## Run Task 4
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch task:=GraspCup
 roslaunch thewalkingdead task4.launch
 ```
 
@@ -108,7 +108,7 @@ roslaunch thewalkingdead task7.launch
 
 ## Run Task 8
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch  task:=PushCart
 roslaunch thewalkingdead task8.launch
 ```
 
@@ -142,7 +142,7 @@ roslaunch thewalkingdead task11.launch
 
 ## Run Task 12
 ```bash
-roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead nav_prepare.launch task:=OpenFridge
 roslaunch thewalkingdead task12.launch
 ```
 

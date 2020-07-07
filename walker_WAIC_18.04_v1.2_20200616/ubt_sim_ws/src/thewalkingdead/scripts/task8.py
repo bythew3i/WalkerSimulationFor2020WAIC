@@ -58,7 +58,7 @@ def task():
     rospy.loginfo("Performing Navigation...")
     NavModule.task()
 
-    stop_dynamic()
+    # stop_dynamic()
     rospy.loginfo("Performing second align...")
     static_correction()
 
