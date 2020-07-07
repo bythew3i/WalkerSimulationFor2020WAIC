@@ -101,10 +101,16 @@ roslaunch thewalkingdead task6.launch
 ```
 
 ## Run Task 7
-> TODO
+```bash
+roslaunch thewalkingdead ctrl_prepare.launch
+roslaunch thewalkingdead task7.launch
+```
 
 ## Run Task 8
-> TODO
+```bash
+roslaunch thewalkingdead nav_prepare.launch
+roslaunch thewalkingdead task8.launch
+```
 
 ## Run Task 9
 > nav_prepare.launch file starts all services that are reqruied by navigation,
