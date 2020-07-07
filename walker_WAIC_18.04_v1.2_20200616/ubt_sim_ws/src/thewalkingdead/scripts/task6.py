@@ -329,7 +329,7 @@ def main(hand_offset=[0,0]):
     # Action 3 move limb straight forward up
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     robot.tar_leftLimb_pos[0] += 0.12 + hand_offset[0]
-    robot.tar_leftLimb_pos[1] += 0.023 + hand_offset[1]#0.023
+    robot.tar_leftLimb_pos[1] += 0.015 + hand_offset[1]#0.023
     robot.tar_leftLimb_pos[2] += -0.05 #-0.055
     robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
     robot.tar_leftLimb_cmd[4] = 2.447
@@ -338,7 +338,7 @@ def main(hand_offset=[0,0]):
     
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     robot.tar_rightLimb_pos[0] += 0.12 + hand_offset[0]
-    robot.tar_rightLimb_pos[1] += -0.023 + hand_offset[1]
+    robot.tar_rightLimb_pos[1] += -0.015 + hand_offset[1]
     robot.tar_rightLimb_pos[2] += -0.05
     robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
     robot.tar_rightLimb_cmd[4] = -2.447
@@ -415,7 +415,7 @@ def main(hand_offset=[0,0]):
     initial_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-    mu = 5e-6
+    mu = 2e-6
     beta = 0.02
     step_num = 14
     # theta = pi/4
@@ -455,7 +455,6 @@ def main(hand_offset=[0,0]):
         # Adjust toward initial cmds
         robot.step_leftLimb_cmd = [robot.step_leftLimb_cmd[i] 
                                    + (initial_leftLimb_cmd[i] - robot.step_leftLimb_cmd[i]) * beta 
-                                #    if i < 3 else robot.step_leftLimb_cmd[i] 
                                    for i in range(len(robot.tar_leftLimb_cmd))]
         # robot.step_leftLimb_cmd[1] = [robot.step_leftLimb_cmd[1] 
         #                            + (initial_leftLimb_cmd[1] - robot.step_leftLimb_cmd[1]) * beta]
@@ -483,7 +482,6 @@ def main(hand_offset=[0,0]):
             continue
         robot.step_rightLimb_cmd = [robot.step_rightLimb_cmd[i] 
                                    + (initial_rightLimb_cmd[i] - robot.step_rightLimb_cmd[i]) * beta
-                                #    if i < 3 else robot.step_rightLimb_cmd[i] 
                                    for i in range(len(robot.tar_rightLimb_cmd))]
         # robot.step_rightLimb_cmd[1] = [robot.step_rightLimb_cmd[1] 
         #                            + (initial_rightLimb_cmd[1] - robot.step_rightLimb_cmd[1]) * beta]
