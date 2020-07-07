@@ -147,10 +147,8 @@ lib
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(solver_server_node src/walker_arm_kin.cpp)
 add_executable(odom_publisher src/odom_publisher.cpp)
-# add_executable(depth_cam_info_publisher src/depth_cam_info_publisher.cpp)
-# add_executable(framed_imu_message_publisher src/framed_imu_message_publisher.cpp)
-# add_executable(cmd_vel_nav_relay src/cmd_vel_nav_relay.cpp)
-
+add_executable(framed_imu_message_publisher src/framed_imu_message_publisher.cpp)
+add_executable(pose_cov_publisher src/pose_cov_publisher.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,9 +160,9 @@ add_executable(odom_publisher src/odom_publisher.cpp)
 ## same as for the library above
 add_dependencies(solver_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(odom_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# add_dependencies(depth_cam_info_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# add_dependencies(framed_imu_message_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# add_dependencies(cmd_vel_nav_relay ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(framed_imu_message_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pose_cov_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(solver_server_node
@@ -174,15 +172,13 @@ target_link_libraries(solver_server_node
 target_link_libraries(odom_publisher
   ${catkin_LIBRARIES}
 )
-# target_link_libraries(depth_cam_info_publisher
-#   ${catkin_LIBRARIES}
-# )
-# target_link_libraries(framed_imu_message_publisher
-#   ${catkin_LIBRARIES}
-# )
-# target_link_libraries(cmd_vel_nav_relay
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(framed_imu_message_publisher
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(pose_cov_publisher
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

@@ -14,7 +14,14 @@
         <arg name="account_file" value="$(find thewalkingdead)/config/user_account.json" />
     </include>
 
-    <!-- <node pkg="thewalkingdead" name="framed_imu_message_publisher" type="framed_imu_message_publisher" output="screen" /> -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub" >
+        <remap from="robot_description" to="walker_description" />
+        <remap from="joint_states" to="different_joint_states" />
+        <param name="publish_frequency" value="1000" />
+    </node>
+
+    <node pkg="thewalkingdead" name="framed_imu_message_publisher" type="framed_imu_message_publisher" output="screen" />
+    <node pkg="thewalkingdead" name="pose_cov_publisher" type="pose_cov_publisher" output="screen" />
 
     <node pkg="thewalkingdead" name="odom_publisher" type="odom_publisher" />
 
@@ -23,9 +30,51 @@
      <!-- orb slam 2 -->
     <include file="$(find orb_slam2_ros)/ros/launch/orb_slam2_walker_stereo.launch" />
 
+    <!-- robot localization -->
+    <node pkg="robot_localization" name="roboloc_ekf" type="ekf_localization_node" >
+        <param name="frequency" value="1000" />
+        <!-- Orb in worst case is 30hz, if more than 1s not received, assume tracking lost -->
+        <param name="sensor_timeout" value="1" />
+        <param name="two_d_mode" value="true" />
+        
+        <param name="map_frame" value="map" />
+        <param name="odom_frame" value="odom" />
+        <param name="base_link_frame" value="base_link" />
+        <param name="base_link_output_frame" value="base_link_output" />
+        <param name="world_frame" value="odom" />
+
+        <param name="imu0" value="sensor/orientus_imu_framed" />
+        <param name="pose0" value="orb_slam2_stereo/poseWithCovariance" />
+
+        <rosparam param="imu0_config">
+            [   
+                false, false, false, <!-- XYZ -->
+                false,  false, true,  <!-- RPY -->
+                false, false, false,  <!-- X'Y'Z' -->
+                false, false, true,   <!-- R'P'Y' -->
+                false, false, false   <!-- X''Y''Z'' -->
+            ]
+        </rosparam>
+        <rosparam param="pose0_config">
+            [   
+                true, true, false, <!-- XYZ -->
+                false,  false, true,  <!-- RPY -->
+                false, false, false,  <!-- X'Y'Z' -->
+                false, false, false,   <!-- R'P'Y' -->
+                false, false, false   <!-- X''Y''Z'' -->
+            ]
+        </rosparam>
+
+        <param name="pose0_differential" value="false" />
+        <param name="print_diagnostics" value="true" />
+
+    </node>
+
     <node pkg="thewalkingdead" name="navigation_prepare" type="navigation_prepare.py" output="screen">
         <param name="task" value="$(arg task)" />
     </node>
+
+     <node pkg="tf" type="static_transform_publisher" name="map_odom_tf" args="0 0 0 0 0 0 map odom 100"/>
 
     <!-- GUIs -->
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find thewalkingdead)/config/walker_nav.rviz" output="screen"/>

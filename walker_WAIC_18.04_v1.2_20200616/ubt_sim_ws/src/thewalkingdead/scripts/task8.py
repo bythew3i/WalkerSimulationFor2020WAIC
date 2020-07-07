@@ -58,8 +58,8 @@ def task():
     rospy.loginfo("Performing Navigation...")
     NavModule.task()
 
-    # rospy.loginfo("Performing second align...")
-    # static_correction()
+    rospy.loginfo("Performing second align...")
+    static_correction()
 
     rospy.sleep(rospy.Duration(2.0))
     rospy.loginfo("Performing Push Cart...")

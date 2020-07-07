@@ -6,9 +6,13 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Int64, String
 
+from robot_localization.srv import SetPose
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
+
 import functools
 import threading
 import math
+from copy import deepcopy
 
 PI = 3.141592654
 
@@ -40,6 +44,7 @@ class Navigation(object):
         #     timeout=10, config_callback=self._configure_orb_slam_callback)
 
         self._lock = threading.Lock()
+        self._orb_pose_lock = threading.Lock()
         self._lock_step = threading.Lock()
         self._lock_stat = threading.Lock()
 
@@ -50,12 +55,19 @@ class Navigation(object):
         self.yaw = None
         self.total_step = None
 
+        self._orb_pose = None
+        self._pose = None
+
         self.odom_listner = rospy.Subscriber(
             "/odom", Odometry, self._odom_callback, queue_size=10)
         self.step_listener = rospy.Subscriber(
             "/Leg/StepNum", Int64, self._step_callback, queue_size=10)
+        self.orb_pose_listener = rospy.Subscriber(
+            "/orb_slam2_stereo/pose", PoseStamped, self._orb_pose_callback, queue_size=10)
         self.nav_pub = rospy.Publisher(
             "/nav/cmd_vel_nav", Twist, queue_size=10, latch=True)
+
+        self.setPose = rospy.ServiceProxy("set_pose", SetPose)
 
         # Wait for incoming data
         self._wait_for_step_num()
@@ -65,13 +77,18 @@ class Navigation(object):
 
     def _odom_callback(self, d):
         with self._lock:
-            self.position = [d.pose.pose.position.x, d.pose.pose.position.y]
-            self._rot = d.pose.pose.orientation
+            self._pose = d.pose.pose
+            self.position = [self._pose.position.x, self._pose.position.y]
+            self._rot = self._pose.orientation
             self._rot_e = tf.transformations.euler_from_quaternion([self._rot.x,
                                                                     self._rot.y,
                                                                     self._rot.z,
                                                                     self._rot.w])
             self.yaw = self._rot_e[2]
+
+    def _orb_pose_callback(self, d):
+        with self._orb_pose_lock:
+            self._orb_pose = d.pose
 
     def _step_callback(self, d):
         with self._lock_step:
@@ -195,25 +212,26 @@ class Navigation(object):
         #     angle = 2*PI - angle
         #     sign = -1  # cw
         angle, sign = self.compute_min_turn_angle_dir(yaw, t_yaw)
+        self.turn_for(sign*angle)
+        
+        # step_lengths = [0.35, 0.175, 0.0875,
+        #                 0.04375, 0.021875, 0.0109375, 0.00546875]
+        # steps = self._compute_steps_angle(step_lengths, angle)
+        # rospy.loginfo("Angle: %f, direction: %s, Steps to turn: %s", angle,
+        #               'CCW' if sign > 0 else 'CW', str(steps))
 
-        step_lengths = [0.35, 0.175, 0.0875,
-                        0.04375, 0.021875, 0.0109375, 0.00546875]
-        steps = self._compute_steps_angle(step_lengths, angle)
-        rospy.loginfo("Angle: %f, direction: %s, Steps to turn: %s", angle,
-                      'CCW' if sign > 0 else 'CW', str(steps))
+        # self._wait_for_step()
+        # with self._lock_step:
+        #     cur_step = self.total_step
 
-        self._wait_for_step()
-        with self._lock_step:
-            cur_step = self.total_step
-
-        r = rospy.Rate(10)
-        for i in range(len(steps)):
-            tar_step = cur_step + steps[i]
-            while cur_step < tar_step:
-                self.nav_pub.publish(self._nav_msg(az=step_lengths[i]*sign))
-                with self._lock_step:
-                    cur_step = self.total_step
-                r.sleep()
+        # r = rospy.Rate(10)
+        # for i in range(len(steps)):
+        #     tar_step = cur_step + steps[i]
+        #     while cur_step < tar_step:
+        #         self.nav_pub.publish(self._nav_msg(az=step_lengths[i]*sign))
+        #         with self._lock_step:
+        #             cur_step = self.total_step
+        #         r.sleep()
 
     def move_for(self, t_x):
         step_lengths = [0.32, 0.16, 0.08, 0.04, 0.02, 0.01, 0.005]
@@ -297,7 +315,7 @@ class Navigation(object):
         while dist < 5.0:
             last_position = cur_position
             with self._lock:
-                cur_position = self.position if self.position is not None else cur_position
+                cur_position = [self._orb_pose.position.x, self._orb_pose.position.y] if self._orb_pose is not None else cur_position
             dist = _dist(last_position, cur_position)
             try:
                 self.nav_pub.publish(self._nav_msg(az=-0.35))
@@ -310,6 +328,28 @@ class Navigation(object):
 
         rospy.loginfo(
             "Navigation::Detected large position shift, assuming relocalization happened...")
+        
+        # # Set pose for robot localization        
+        # pcs = PoseWithCovarianceStamped()
+        # pcs.header.stamp = rospy.Time.now()
+        # pcs.header.frame_id = "odom"
+        # with self._lock:
+        #     pcs.pose.pose = deepcopy(self._orb_pose)
+        # cov =  [ 0.1, 0.0, 0.0, 0.0, 0.0, 0.0,
+        #         0.0, 0.1, 0.0, 0.0, 0.0, 0.0,   
+        #         0.0, 0.0, 0.1, 0.0, 0.0, 0.0,   
+        #         0.0, 0.0, 0.0, 0.1, 0.0, 0.0,   
+        #         0.0, 0.0, 0.0, 0.0, 0.1, 0.0,   
+        #         0.0, 0.0, 0.0, 0.0, 0.0, 0.1 ]
+        # pcs.pose.covariance = cov 
+        
+        # print (pcs)
+        # print (pcs.pose.pose)
+        # print (pcs.pose.covariance)
+
+        # res = self.setPose(pcs)
+        # rospy.logdebug("Robot localization set pose service result: %s", str(res))
+
         # Once relocation finishes, orb_slam2 will start sending /map->/camera_link tf
         # which will be picked up by odom_publisher
         self._wait_for_odom_data()

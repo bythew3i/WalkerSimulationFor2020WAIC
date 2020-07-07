@@ -44,14 +44,32 @@
     name="boteye_imu_link" />
   <joint
     name="base_boteye_imu" type="fixed">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0" rpy="0 0 1.5708" />
     <parent link="base_link" />
     <child link="boteye_imu_link" />
   </joint>
 
   <link
-    name="boteye_link" />
+    name="orientus_imu_link" />
+  
+  <joint
+    name="base_orientus_imu" type="fixed">
+    <origin xyz="0 -0.2321 0" rpy="0 0 1.5708" />
+    <parent link="base_link" />
+    <child link="orientus_imu_link" />
+  </joint>
 
+  <link
+    name="head_imu_link" />
+  <joint
+    name="base_head_imu" type="fixed">
+    <origin xyz="0 0.3229 0" rpy="0 0 1.5708" />
+    <parent link="base_link" />
+    <child link="head_imu_link" />
+  </joint>
+
+  <link
+    name="boteye_link" />
   <joint
     name="base_boteye_link" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0" />

@@ -39,7 +39,7 @@ def task():
 
 if __name__ == '__main__':
     try:
-        rospy.init_node("task9_runner", anonymous=True, log_level=rospy.INFO)
+        rospy.init_node("task9_runner", anonymous=True, log_level=rospy.DEBUG)
         task()
     except rospy.ROSInterruptException:
         pass
