@@ -2,7 +2,7 @@
 
 from math import sqrt, e, asin, acos, sin, cos, atan, pi
 from scipy.interpolate import KroghInterpolator
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 
 # CONSTANTS
 L1 = 0.275
@@ -321,38 +321,38 @@ f_delta_init = KroghInterpolator(
 ##########################################
 # Visualize the trajectory
 ##########################################
-def draw_trajectory(X, Y, xa, ya, title):
-    plt.figure()
-    plt.plot(X, Y)
-    plt.title(title)
-    plt.xlabel(xa)
-    plt.ylabel(ya)
+# def draw_trajectory(X, Y, xa, ya, title):
+#     plt.figure()
+#     plt.plot(X, Y)
+#     plt.title(title)
+#     plt.xlabel(xa)
+#     plt.ylabel(ya)
 
-def get_xy(start, end, f):
-    X = []
-    Y = []
-    t = start
-    while t < end:
-        X.append(t)
-        Y.append(f(t-start))
-        t += 0.01
-    return X, Y
+# def get_xy(start, end, f):
+#     X = []
+#     Y = []
+#     t = start
+#     while t < end:
+#         X.append(t)
+#         Y.append(f(t-start))
+#         t += 0.01
+#     return X, Y
 
-def debugT(trac1, trac2, tt):
-    print("{}(0)=={}(T): {} == {}  {}".format(
-        trac1.__name__,
-        trac2.__name__,
-        trac1(0), 
-        trac2(tt), 
-        abs(abs(trac1(0))-abs(trac2(tt)))
-    ))
-    print("{}(0)=={}(T): {} == {}  {}".format(
-        trac2.__name__,
-        trac1.__name__,
-        trac2(0), 
-        trac1(tt), 
-        abs(abs(trac1(0))-abs(trac2(tt)))
-    ))
+# def debugT(trac1, trac2, tt):
+#     print("{}(0)=={}(T): {} == {}  {}".format(
+#         trac1.__name__,
+#         trac2.__name__,
+#         trac1(0), 
+#         trac2(tt), 
+#         abs(abs(trac1(0))-abs(trac2(tt)))
+#     ))
+#     print("{}(0)=={}(T): {} == {}  {}".format(
+#         trac2.__name__,
+#         trac1.__name__,
+#         trac2(0), 
+#         trac1(tt), 
+#         abs(abs(trac1(0))-abs(trac2(tt)))
+#     ))
 
 
 

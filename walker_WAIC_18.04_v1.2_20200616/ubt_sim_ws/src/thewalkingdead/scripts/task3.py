@@ -423,7 +423,7 @@ def task3():
 
     num = 0
     while num not in [1,2,3,4,5]:
-        num = int(input("请输入要抓取的杯子号码（1-5）："))
+        num = int(input("\n请输入要抓取的杯子号码（1-5）："))
 
     ex, ey = walker.goto_cup(num)
     grasp_cup(ex*0.8, ey*0.85)

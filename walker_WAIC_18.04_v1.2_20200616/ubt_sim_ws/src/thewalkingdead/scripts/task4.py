@@ -206,7 +206,7 @@ def task():
     
     num = 0
     while num not in [1,2,3,4,5]:
-        num = int(input("请输入要抓取的杯子号码（1-5）："))
+        num = int(input("\n请输入要抓取的杯子号码（1-5）："))
 
     move_to_room()
     rospy.loginfo("Finished move_to_room")
