@@ -1,0 +1,13 @@
+<!-- Make sure launch nav_preapare first -->
+<launch>
+    <param name="/use_sim_time" value="true" />
+    
+    <arg name="urdf_path" default="$(find thewalkingdead)/config/walker.urdf" />
+
+    <node type="solver_server_node" name="solver_server_node" pkg="thewalkingdead">
+        <param name="walker_urdf_path" value="$(arg urdf_path)" />
+    </node>
+
+    <node pkg="thewalkingdead" type="task8.py" name="task8" output="screen"/>
+
+</launch>
