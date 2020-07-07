@@ -207,7 +207,7 @@ class Robot():
             return
         
     
-def main():
+def main(hand_offset=[0,0]):
     robot = Robot()
     # wait for subscriber to get msgs
     while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
@@ -276,8 +276,8 @@ def main():
     LShoulderYaw=-1.
     LElbowRoll=-2.1
     LElbowYaw=2.447
-    LWristRoll=-.6
-    LWristPitch=-pi/4
+    LWristRoll=-0.872
+    LWristPitch=-0.872
     robot.tar_leftLimb_cmd = [LShoulderPitch,
                             LShoulderRoll,
                             LShoulderYaw,
@@ -290,8 +290,8 @@ def main():
     RShoulderYaw=1.
     RElbowRoll=-2.1
     RElbowYaw=-2.447
-    RWristRoll=.6
-    RWristPitch=-pi/4
+    RWristRoll=0.872
+    RWristPitch=-0.872
     robot.tar_rightLimb_cmd = [RShoulderPitch,
                                RShoulderRoll,
                                RShoulderYaw,
@@ -326,27 +326,27 @@ def main():
         rate.sleep()
         time_elapsed += 0.001
     
-    # Action 3 move limb straight forward
+    # Action 3 move limb straight forward up
     robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.leftLimb_cmd, "left")
-    robot.tar_leftLimb_pos[0] += 0.11
-    robot.tar_leftLimb_pos[1] += 0. #0.023
-    robot.tar_leftLimb_pos[2] += -0.038 #-0.055
+    robot.tar_leftLimb_pos[0] += 0.12 + hand_offset[0]
+    robot.tar_leftLimb_pos[1] += 0.023 + hand_offset[1]#0.023
+    robot.tar_leftLimb_pos[2] += -0.05 #-0.055
     robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
     robot.tar_leftLimb_cmd[4] = 2.447
     robot.tar_leftLimb_cmd[5] = -0.3
     robot.tar_leftLimb_cmd[6] = -0.3
     
     robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.rightLimb_cmd, "right")
-    robot.tar_rightLimb_pos[0] += 0.11
-    robot.tar_rightLimb_pos[1] -= 0.
-    robot.tar_rightLimb_pos[2] += -0.038
+    robot.tar_rightLimb_pos[0] += 0.12 + hand_offset[0]
+    robot.tar_rightLimb_pos[1] += -0.023 + hand_offset[1]
+    robot.tar_rightLimb_pos[2] += -0.05
     robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
     robot.tar_rightLimb_cmd[4] = -2.447
     robot.tar_rightLimb_cmd[5] = 0.3
     robot.tar_rightLimb_cmd[6] = -0.3
     
     time_elapsed = 0
-    duration = 0.5
+    duration = 0.8
     rate = rospy.Rate(1000)
     initial_leftLimb_cmd = robot.leftLimb_cmd
     initial_rightLimb_cmd = robot.rightLimb_cmd
@@ -371,7 +371,7 @@ def main():
         robot.rightLimbPublisher.publish(msg)
         rate.sleep()
         time_elapsed += 0.001
-    
+
     # Action 4 close hand
     robot.tar_leftHand_cmd = [1.5] * 10
     robot.tar_rightHand_cmd = [1.5] * 10
@@ -528,6 +528,8 @@ def main():
         robot.tar_leftLimb_pos[2] = robot.leftLimb_pos[2] - (lfx*cos(theta) + lfy*sin(theta))*mu
         # ik
         robot.step_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.leftLimb_cmd, "left")
+        if robot.step_leftLimb_cmd == None: 
+            continue
         # Adjust toward initial cmds
         robot.step_leftLimb_cmd = [robot.step_leftLimb_cmd[i] 
                                    + (initial_leftLimb_cmd[i] - robot.step_leftLimb_cmd[i]) * beta 
@@ -552,6 +554,8 @@ def main():
         robot.tar_rightLimb_pos[1] = robot.rightLimb_pos[1] - (rfx*sin(pi-theta) - rfy*cos(pi-theta))*mu #- (robot.leftLimb_pos[1]+robot.rightLimb_pos[1])/2*0.005
         robot.tar_rightLimb_pos[2] = robot.rightLimb_pos[2] - (rfx*cos(pi-theta) + rfy*sin(pi-theta))*mu
         robot.step_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.rightLimb_cmd, "right")
+        if robot.step_rightLimb_cmd == None: 
+            continue
         robot.step_rightLimb_cmd = [robot.step_rightLimb_cmd[i] 
                                    + (initial_rightLimb_cmd[i] - robot.step_rightLimb_cmd[i]) * beta 
                                    for i in range(len(robot.tar_rightLimb_cmd))]

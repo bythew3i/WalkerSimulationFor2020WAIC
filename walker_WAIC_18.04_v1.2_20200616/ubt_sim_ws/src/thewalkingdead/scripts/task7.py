@@ -273,7 +273,7 @@ def main():
         robot.Head_publisher.publish(msg)
         rate.sleep()
         time_elapsed += 0.001
-    rospy.sleep(0.4)
+    rospy.sleep(0.5)
     rospy.loginfo(robot.measure_depth())
     
     rate = rospy.Rate(1000)
@@ -308,6 +308,7 @@ def main():
     
     while robot.leg_step_num != 0:
         rospy.sleep(0.1)
+    rospy.sleep(0.5)
             
     # get current distance x
     rate = rospy.Rate(1000)
@@ -340,8 +341,25 @@ def main():
     
     while robot.leg_step_num != 0:
         rospy.sleep(0.1)
+    rospy.sleep(0.5)
     
-    task6.main()
+    measures_x = []
+    measures_y = []
+    rate = rospy.Rate(1000)
+    time_elapsed = 0
+    duration = 0.2
+    while not rospy.is_shutdown() and time_elapsed < duration:
+        measures_x.append(robot.middleBackRange)
+        measures_y.append(robot.measure_depth())
+        rate.sleep()
+        time_elapsed += 0.001
+    measure_x = sum(measures_x) / len(measures_x)
+    measure_y = sum(measures_y) / len(measures_y)
+    offset = []
+    offset.append((tar_distance_x - measure_x)*0.8)
+    offset.append((tar_distance_y - measure_y)*0.8)
+    print("offset is ", offset)
+    task6.main(offset)
 
 if __name__ == "__main__":
     # Load scene
