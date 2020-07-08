@@ -42,9 +42,9 @@ if __name__ == '__main__':
     try:
         rospy.init_node("task9_runner", anonymous=True, log_level=rospy.INFO)
         goto_nav("PushCart")
-        rospy.loginfo("TaskMain: leg_motion service started, in dynamic mode...")
+        rospy.loginfo("Task9_Main: Waiting for leg_motion service to finish initializing...")
         start_dynamic()
-        rospy.loginfo("TaskMain: leg_motion service started, in dynamic mode...")
+        rospy.loginfo("Task9_Main: leg_motion service started, in dynamic mode...")
         task()
     except rospy.ROSInterruptException:
         pass
