@@ -91,13 +91,11 @@ roslaunch thewalkingdead task5.launch
 
 ## Run Task 6
 ```bash
-roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task6.launch
 ```
 
 ## Run Task 7
 ```bash
-roslaunch thewalkingdead ctrl_prepare.launch
 roslaunch thewalkingdead task7.launch
 ```
 
