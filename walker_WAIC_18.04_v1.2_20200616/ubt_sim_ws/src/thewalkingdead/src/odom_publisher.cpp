@@ -178,7 +178,7 @@ int main(int argc, char **argv)
             listener.lookupTransform("/map", "/stereo_camera_link", ros::Time(0), map_camlink_transform);
         }
         catch (tf::TransformException ex) {
-            ROS_ERROR("%s", ex.what());
+            // ROS_ERROR("%s", ex.what());
             ros::Duration(1.0).sleep();
             continue;
         }
