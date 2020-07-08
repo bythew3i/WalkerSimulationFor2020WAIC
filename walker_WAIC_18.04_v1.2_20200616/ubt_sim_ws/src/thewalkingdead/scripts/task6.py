@@ -206,7 +206,7 @@ class Robot():
             print(e)
             return
     
-def main():
+def main(hand_offset=[0,0]):
     robot = Robot()
     # wait for subscriber to get msgs
     while (robot.leftLimb_cmd == None or robot.rightLimb_cmd == None) and not rospy.is_shutdown():
@@ -298,6 +298,14 @@ def main():
                                RElbowYaw,
                                RWristRoll,
                                RWristPitch]
+    robot.tar_leftLimb_pos = robot.__cmd2pos__(robot.tar_leftLimb_cmd, "left")
+    robot.tar_rightLimb_pos = robot.__cmd2pos__(robot.tar_rightLimb_cmd, "right")
+    robot.tar_leftLimb_pos[0] += 0.038 + hand_offset[0]
+    robot.tar_leftLimb_pos[1] += -0.02 + hand_offset[1]
+    robot.tar_rightLimb_pos[0] += 0.038 + hand_offset[0]
+    robot.tar_rightLimb_pos[1] += 0.02 + hand_offset[1]
+    robot.tar_leftLimb_cmd = robot.__pos2cmd__(robot.tar_leftLimb_pos, robot.tar_leftLimb_cmd, "left")
+    robot.tar_rightLimb_cmd = robot.__pos2cmd__(robot.tar_rightLimb_pos, robot.tar_rightLimb_cmd, "right")
     time_elapsed = 0
     duration = 2
     rate = rospy.Rate(1000)
