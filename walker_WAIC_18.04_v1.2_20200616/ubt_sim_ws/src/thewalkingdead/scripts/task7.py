@@ -300,10 +300,7 @@ def main():
         time_elapsed += 0.001
     robot.legmotion_stop()
     
-    while robot.leg_step_num != 0:
-        rospy.sleep(0.1)
-        
-    rospy.sleep(1)
+    rospy.sleep(2)
             
     # get current distance x
     rate = rospy.Rate(1000)
