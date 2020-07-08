@@ -12,7 +12,7 @@ import cv_bridge
 import cv2
 from thewalkingdead.srv import Solver
 
-class Task11(object):
+class OpenFridgeSolver(object):
     def __init__(self):
         self.log_msg = None
         self.head_depth = Image()
@@ -121,7 +121,6 @@ class Task11(object):
 
 
     def solve(self):
-        rospy.init_node('task11', anonymous=True)
 
         ### Subscribers
         rospy.Subscriber("/walker/camera/headDepth", Image, self.head_depth_cb)
@@ -146,11 +145,6 @@ class Task11(object):
         r_hand_ctrl_msg.command = [0 for _ in range(10)]
 
         ### Services
-        rospy.wait_for_service('/walker/sence', timeout=10)
-        self.scene_service = rospy.ServiceProxy(
-            "/walker/sence", 
-            SceneSelection
-        )
         rospy.wait_for_service('/Leg/TaskScheduler', timeout=10)
         self.leg_motion_service = rospy.ServiceProxy(
             "/Leg/TaskScheduler", 
@@ -168,11 +162,10 @@ class Task11(object):
         )
 
 
-
         # SOME CONSTANTS
         # TAR_DEPTH_X = 1.3377
         # TAR_DEPTH_Y = 2.9407
-        TAR_DEPTH_X = 1.3750
+        TAR_DEPTH_X = 1.3820
         TAR_DEPTH_Y = 2.9350
         MEASURE_Y_TIME = 1
         MEASURE_X_TIME = 1
@@ -190,8 +183,6 @@ class Task11(object):
         move_x = 0 # forward is postive, backward is negative
         move_y = 0 # right is negative, left is postive
 
-        ## Select the scene
-        self.scene_service(scene_name="OpenFridge", nav=False, vision=True)
 
         while not rospy.is_shutdown():
 
@@ -357,8 +348,16 @@ class Task11(object):
 
 if __name__ == '__main__':
     try:
-        task = Task11()
-        task.solve()
+        rospy.init_node('task11', anonymous=True)
+        rospy.wait_for_service('/walker/sence', timeout=10)
+        scene_service = rospy.ServiceProxy(
+            "/walker/sence", 
+            SceneSelection
+        )
+        scene_service(scene_name="OpenFridge", nav=False, vision=True)
+
+        solver = OpenFridgeSolver()
+        solver.solve()
     except rospy.ROSInterruptException as e:
         print("ROS Interrupted: {}".format(e))
 
