@@ -1,4 +1,3 @@
-<!-- Make sure launch ctrl_preapare first -->
 <launch>
     <param name="/use_sim_time" value="true" />
 
@@ -14,5 +13,5 @@
         <param name="walker_urdf_path" value="$(arg urdf_path)" />
     </node>
 
-    <node pkg="thewalkingdead" type="task6.py" name="task6" output="screen"/>
+    <node pkg="thewalkingdead" type="task6.py" name="task6" output="screen"  required="true"/>
 </launch>

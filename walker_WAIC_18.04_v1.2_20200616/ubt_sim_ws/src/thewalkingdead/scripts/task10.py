@@ -165,16 +165,13 @@ class Task10(object):
         ## Select the scene
         self.scene_service(scene_name="OpenFridge", nav=False, vision=False)
 
-        # Start Leg Motion 
-        self.legmotion_start()
 
         # Timing marks
         rate = rospy.Rate(1000)
         timer = 0
         timer_for = 0
 
-
-        action = 1
+        action = 0
 
         # some CONSTANTS
         ACTSTEPTIME = 0.6
@@ -187,6 +184,12 @@ class Task10(object):
             ## waiting for stable status
             if self.legstatus.data in ["stopping", "standInit"]:
                 self.log("Waiting to stable")
+            
+            elif action == 0:
+                # Start Leg Motion 
+                self.legmotion_start()
+                action += 1
+                
             
             ## Action1: move back for extra space
             elif action==1:
