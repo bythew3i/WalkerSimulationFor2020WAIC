@@ -1,31 +1,23 @@
 <launch>
-    <arg name="task" default="GraspCup" />
     <arg name="map_file" default="$(find thewalkingdead)/map/occupancy_grid.yaml"/>
 
     <param name="/use_sim_time" value="true" />
     <!-- Load the urdf into the parameter server. -->
     <param name="walker_description" textfile="$(find thewalkingdead)/config/walker.urdf"/>
 
-    <!-- webots -->
-    <node type="start_webots.sh" name="webots" pkg="thewalkingdead" output="log"/>
-
     <!-- Leg motions -->
     <include file="$(find thewalkingdead)/launch/walker2_leg.launch" >
         <arg name="account_file" value="$(find thewalkingdead)/config/user_account.json" />
     </include>
 
-    <!-- <node pkg="thewalkingdead" name="framed_imu_message_publisher" type="framed_imu_message_publisher" output="screen" /> -->
-
+    <!-- Odom -> baselink transform publisher -->
     <node pkg="thewalkingdead" name="odom_publisher" type="odom_publisher" />
 
+    <!-- Map server -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
      <!-- orb slam 2 -->
     <include file="$(find orb_slam2_ros)/ros/launch/orb_slam2_walker_stereo.launch" />
-
-    <node pkg="thewalkingdead" name="navigation_prepare" type="navigation_prepare.py" output="screen">
-        <param name="task" value="$(arg task)" />
-    </node>
 
     <!-- GUIs -->
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find thewalkingdead)/config/walker_nav.rviz" output="screen"/>

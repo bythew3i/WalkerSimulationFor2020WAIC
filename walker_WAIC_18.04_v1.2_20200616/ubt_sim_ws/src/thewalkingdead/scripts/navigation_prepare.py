@@ -82,22 +82,3 @@ def wait_for_standing():
     while not cur_leg_status == "standing":
         with lock:
             cur_leg_status = leg_status
-
-def prepare():
-    rospy.init_node('navigation_prepare', anonymous=True)
-    
-    task = rospy.get_param("navigation_prepare/task")
-    if task not in ["GraspCup", "PushCart", "OpenFridge"]:
-        raise ValueError("Unidentified task: ", task)
-
-    rospy.loginfo("Navigation Prepare:: Moving behind sofa...")
-    goto_nav(task)
-    rospy.loginfo("Navigation Prepare:: Starting leg motion...")
-    start_dynamic()
-    rospy.loginfo("Navigation Prepare:: leg motion started...")
-
-if __name__ == '__main__':
-    try:
-        prepare()
-    except rospy.ROSInterruptException:
-        pass

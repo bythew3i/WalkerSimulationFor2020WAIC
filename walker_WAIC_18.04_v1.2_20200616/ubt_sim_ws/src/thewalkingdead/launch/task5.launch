@@ -2,6 +2,8 @@
 <launch>
     <param name="/use_sim_time" value="true" />
 
+    <include file="$(find thewalkingdead)/launch/nav_prepare.launch" />
+
     <node type="task5.py" name="task5" pkg="thewalkingdead" output="screen">
     </node>
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import navigation
+from navigation_prepare import goto_nav, start_dynamic
 import rospy
 
 waypoints = [[1.00, -7.00], #About the center of the left-sofa-passage
@@ -17,7 +18,7 @@ def task():
     rospy.loginfo("Attempting Relocalize...")
     nav.relocalize()
 
-    # nav.halt(1.0)
+    nav.halt(1.0)
 
     initial_waypoint = waypoints[0]
     initial_yaw = 1.5708
@@ -25,11 +26,11 @@ def task():
     rospy.loginfo("Going to initial waypoint.")
     nav.go_to(initial_waypoint, head_on=False)
 
-    # nav.halt(1.0)
+    nav.halt(1.0)
     rospy.loginfo("Going to initial yaw.")
     nav.turn_to(initial_yaw)
 
-    # nav.halt(1.0)
+    nav.halt(1.0)
     for i in range(1, len(waypoints), 1):
         rospy.loginfo("Going to %dth waypoint, position is :%s", i, str(waypoints[i]))
         nav.go_to(waypoints[i], head_on=True)
@@ -41,6 +42,10 @@ def task():
 if __name__ == '__main__':
     try:
         rospy.init_node("task5_runner", anonymous=True, log_level=rospy.INFO)
+        goto_nav("GraspCup")
+        rospy.loginfo("Task5_Main: Waiting for leg_motion service to finish initializing...")
+        start_dynamic()
+        rospy.loginfo("Task5_Main: leg_motion service started, in dynamic mode...")
         task()
     except rospy.ROSInterruptException:
         pass

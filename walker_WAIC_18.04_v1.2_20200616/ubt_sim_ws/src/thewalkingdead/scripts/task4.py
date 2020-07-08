@@ -15,7 +15,7 @@ import cv2
 from math import pi
 
 import navigation
-from navigation_prepare import stop_dynamic
+from navigation_prepare import start_dynamic, stop_dynamic, goto_nav
 from task3 import grasp_cup
 from task5 import task as move_to_room
 
@@ -222,6 +222,10 @@ def task():
 if __name__ == '__main__':
     try:
         rospy.init_node("task4", anonymous=True, log_level=rospy.INFO)
+        goto_nav("GraspCup")
+        rospy.loginfo("Task4_Main: Waiting for leg_motion service to finish initializing...")
+        start_dynamic()
+        rospy.loginfo("Task4_Main: leg_motion service started, in dynamic mode...")
         task()
     except rospy.ROSInterruptException:
         pass

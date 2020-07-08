@@ -76,21 +76,16 @@ Notes:
 - 有待于做更多测试，有小可能会失败
 
 ## Run Task 4
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch task:=GraspCup
 roslaunch thewalkingdead task4.launch
 ```
 
 ## Run Task 5
-> nav_prepare.launch file starts all services that are reqruied by navigation,
-including webots, leg_motion etc. Please give ~30s for everything to boot up,
-and for the robot entering dynamic mode.
-
 > You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch task:=GraspCup
-# Wait for about 30s...
 roslaunch thewalkingdead task5.launch
 ```
 
@@ -107,21 +102,16 @@ roslaunch thewalkingdead task7.launch
 ```
 
 ## Run Task 8
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch  task:=PushCart
 roslaunch thewalkingdead task8.launch
 ```
 
 ## Run Task 9
-> nav_prepare.launch file starts all services that are reqruied by navigation,
-including webots, leg_motion etc. Please give ~30s for everything to boot up,
-and for the robot entering dynamic mode.
-
 > You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch task:=PushCart
-# Wait for about 30s...
 roslaunch thewalkingdead task9.launch
 ```
 
@@ -141,21 +131,16 @@ roslaunch thewalkingdead task11.launch
 ```
 
 ## Run Task 12
+> You need map_server to host the 2d map file. Install with 
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch task:=OpenFridge
 roslaunch thewalkingdead task12.launch
 ```
 
 ## Run Task 13
-> nav_prepare.launch file starts all services that are reqruied by navigation,
-including webots, leg_motion etc. Please give ~30s for everything to boot up,
-and for the robot entering dynamic mode.
-
 > You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server` if you don't have it. (or `rosdep install` ??)
+`sudo apt-get install ros-melodic-map-server`
 ```bash
-roslaunch thewalkingdead nav_prepare.launch task:=OpenFridge
-# Wait for about 30s...
 roslaunch thewalkingdead task13.launch
 ```
 
