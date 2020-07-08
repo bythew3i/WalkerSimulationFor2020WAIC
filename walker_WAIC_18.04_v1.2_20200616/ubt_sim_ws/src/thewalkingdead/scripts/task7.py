@@ -252,13 +252,9 @@ def main():
     while robot.leg_status == "standInit":
         rospy.sleep(0.01)
     
-    # robot.legmotion_start()
-
-    
     initial_head_cmd = robot.head_cmd
     # Turn head right
     rate = rospy.Rate(1000)
-    # robot.tar_head_cmd = [-1.58, -0.34]
     robot.tar_head_cmd = [-pi/2, -0.1*pi]
     time_elapsed = 0
     duration = 0.5
@@ -291,8 +287,6 @@ def main():
     step_size = 0.04
     diff_y = tar_distance_y - cur_distance_y
     step_num = abs(round(diff_y / step_size * 2))
-    print("diff_y is ", diff_y)
-    print("step_num", step_num)
     # start legmotion and move horizontally
     robot.legmotion_start()
     rate = rospy.Rate(1000)
@@ -354,7 +348,6 @@ if __name__ == "__main__":
         request.scene_name = "PushCart"
         request.nav = False
         request.vision = True
-        # request.vision = False
         response = scheduler(request)
         print("scene loaded", response)
     except rospy.ServiceException as e:
