@@ -165,7 +165,7 @@ class OpenFridgeSolver(object):
         # SOME CONSTANTS
         # TAR_DEPTH_X = 1.3377
         # TAR_DEPTH_Y = 2.9407
-        TAR_DEPTH_X = 1.3820
+        TAR_DEPTH_X = 1.3800
         TAR_DEPTH_Y = 2.9350
         MEASURE_Y_TIME = 1
         MEASURE_X_TIME = 1

@@ -250,8 +250,8 @@ class Task10(object):
 
                 elif timer < ACTSTEPTIME*4:
                     fac = (timer-ACTSTEPTIME*3)/(ACTSTEPTIME*1)
-                    righthand_msg.command[0] = 1 * fac
-                    righthand_msg.command[1] = 1 * fac
+                    righthand_msg.command[0] = 1.0 * fac
+                    righthand_msg.command[1] = 0.1 * fac
                     righthand_msg.command[2] = 0.8 + (1.57-0.8) * fac
                     righthand_msg.command[3] = 1.57 * fac
                     righthand_msg.command[4] = 0.8 + (1.57-0.8) * fac
