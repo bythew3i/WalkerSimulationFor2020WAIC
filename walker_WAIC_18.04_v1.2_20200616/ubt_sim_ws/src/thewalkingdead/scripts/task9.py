@@ -16,7 +16,7 @@ def task():
     rospy.loginfo("Attempting Relocalize...")
     nav.relocalize()
 
-    nav.halt(1.0)
+    # nav.halt(1.0)
 
     initial_waypoint = waypoints[0]
     initial_yaw = 1.5708
@@ -24,15 +24,15 @@ def task():
     rospy.loginfo("Going to initial waypoint.")
     nav.go_to(initial_waypoint, head_on=False)
 
-    nav.halt(1.0)
+    # nav.halt(1.0)
     rospy.loginfo("Going to initial yaw.")
     nav.turn_to(initial_yaw)
 
-    nav.halt(1.0)
+    # nav.halt(1.0)
     for i in range(1, len(waypoints), 1):
         rospy.loginfo("Going to %dth waypoint, position is :%s", i, str(waypoints[i]))
         nav.go_to(waypoints[i], head_on=True)
-        nav.halt(1.0)
+        # nav.halt(1.0)
     rospy.loginfo("Turning to final yaw.")
     nav.turn_to(final_yaw)
     nav.halt()
