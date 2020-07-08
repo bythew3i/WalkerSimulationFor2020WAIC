@@ -2,6 +2,7 @@
 #include "thewalkingdead/Solver.h"
 
 #include <random>
+#include <sstream>
 
 string arm_joint_names[17]={"left_limb_l1","left_limb_l2","left_limb_l3","left_limb_l4","left_limb_l5","left_limb_l6","left_limb_l7","left_palm_link",
                             "right_limb_l1","right_limb_l2","right_limb_l3","right_limb_l4","right_limb_l5","right_limb_l6","right_limb_l7","right_palm_link","base_link"};
@@ -61,21 +62,22 @@ bool check_bound(VectorXd solve, MatrixXd bounds, int count)
             ob_link.push_back(i);
         }
     }
-    if (ob_link.empty())
-    {
-        ROS_INFO("Solution is in range.");
-        return true;
-    }
-    else
-    {
-        ROS_WARN("Solution is partially out of bound. OB_LINKS: ");
-        for (int n : ob_link)
-        {
-            cout << n << " ";
-        }
-        cout << endl;
-        return false;
-    }
+    // if (ob_link.empty())
+    // {
+    //     ROS_INFO("Solution is in range.");
+    //     return true;
+    // }
+    // else
+    // {
+    //     stringstream ss;
+    //     for (int n : ob_link)
+    //     {
+    //         ss << n << ", ";
+    //     }
+    //     ROS_WARN("Solution is partially out of bound. OB_LINKS: [%s]", ss.str().c_str());
+        
+    //     return false;
+    // }
 }
 
 /*
