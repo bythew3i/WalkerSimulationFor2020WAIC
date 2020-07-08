@@ -34,7 +34,7 @@ def task():
     for i in range(1, len(waypoints), 1):
         rospy.loginfo("Going to %dth waypoint, position is :%s", i, str(waypoints[i]))
         nav.go_to(waypoints[i], head_on=True)
-        # nav.halt(1.0)
+        nav.halt(1.0)
     rospy.loginfo("Turning to final yaw.")
     nav.turn_to(final_yaw)
     nav.halt()
