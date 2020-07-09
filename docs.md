@@ -14,6 +14,18 @@
 
 
 ## Setup
+
+First, make sure your computer has `scipy` installed:
+[Install Scipy](https://www.scipy.org/install.html)
+
+Also, install map server package:
+```bash
+sudo apt-get install ros-melodic-map-server
+```
+
+Download 3dcloud map file from our release section, place it under `thewalkingdead/map`:
+[link](https://github.com/by-the-w3i/WalkerSimulationFor2020WAIC/releases/tag/v0.0)
+
 **If `roscore` is NOT runing**, run this in another terminal:
 ```bash
 roscore
@@ -75,15 +87,11 @@ Notes:
 - 有待于做更多测试，有小可能会失败
 
 ## Run Task 4
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task4.launch
 ```
 
 ## Run Task 5
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task5.launch
 ```
@@ -99,15 +107,11 @@ roslaunch thewalkingdead task7.launch
 ```
 
 ## Run Task 8
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task8.launch
 ```
 
 ## Run Task 9
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task9.launch
 ```
@@ -126,15 +130,11 @@ roslaunch thewalkingdead task11.launch
 ```
 
 ## Run Task 12
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task12.launch
 ```
 
 ## Run Task 13
-> You need map_server to host the 2d map file. Install with 
-`sudo apt-get install ros-melodic-map-server`
 ```bash
 roslaunch thewalkingdead task13.launch
 ```

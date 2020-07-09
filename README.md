@@ -117,13 +117,6 @@ git fetch upstream master
     rosservice call /walker/sence "{scene_name: Upstairs, nav: false, vision: false}"
     ```
 
-## ChangeLog
-- 2020-06-20 #2 新增前向运动学Service, 支持左右手
-- 2020-06-20 新增反向运动学Service，仅支持左手
-
-
-
-
 ## Rules
 
 赛事概述 
